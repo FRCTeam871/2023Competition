@@ -24,6 +24,7 @@ public class ArmExtension extends SubsystemBase {
   public ArmExtension(final MotorController extensionMotor, final DistanceEncoder distanceEncoder) {
     this.extensionMotor = extensionMotor;
     this.extensionPID = new PIDController(EXTENSION_PID_KP, EXTENSION_PID_KI, EXTENSION_PID_KD);
+    extensionPID.setTolerance(0.5);
     this.distanceEncoder = distanceEncoder;
     
     SmartDashboard.putData("extensionPID", extensionPID);
@@ -77,6 +78,10 @@ public class ArmExtension extends SubsystemBase {
 
   public CommandBase resetExtensionEncoderCommand() {
     return runOnce(distanceEncoder::reset);
+  }
+
+  public boolean isAtSetpoint() {
+    return extensionPID.atSetpoint();
   }
 
 

@@ -5,6 +5,9 @@
 
 package com.team871;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+
 import com.team871.config.*;
 import com.team871.dashboard.DriveTrainExtensions;
 import com.team871.simulation.SimulationGyro;
@@ -18,6 +21,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -44,6 +48,7 @@ public class RobotContainer {
   public RobotContainer() {
     config = new RobotConfig();
     controlConfig = new XboxHotasControlConfig();
+    // controlConfig = new XboxOnlyControlConfig();
     gyro = RobotBase.isReal() ? new Gyro() : new SimulationGyro();
 
     drivetrain =
@@ -121,17 +126,64 @@ public class RobotContainer {
     claw.setDefaultCommand(controlConfig::getClawAxisValue);
   }
 
-  public void configureCompositeCommands(){
-    controlConfig.getFoldOutTrigger()
-        .toggleOnTrue(
-            shoulder.pitchPIDCommand("Bottom",
-      () -> {
-        final double targetPosition = config.getBottomShoulderSetpoint();
-        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
-        return targetPosition + offsetValue;
-      }).andThen(armExtension.extensionPIDCommand(
-        "bottom", config::getBottomExtensionSetpoint)));
+
+  public Command makeDoAndWait(final CommandBase command, final BooleanSupplier isFinished){
+    return new CommandBase() {
+      
+      @Override
+      public void execute() {
+        command.schedule();
+      }
+
+      @Override
+          public void cancel() {
+              command.cancel();
+          }
+
+      @Override
+          public boolean isFinished() {
+              return isFinished.getAsBoolean();
+          }
+    };
   }
+
+  public void configureCompositeCommands(){
+
+
+  controlConfig.getFoldInTrigger()
+  .toggleOnTrue(
+    makeDoAndWait( 
+      armExtension.extensionPIDCommand(
+      "TopNode", config::getFoldInExtensionSetpoint),
+      ()->false
+      // armExtension::isAtSetpoint
+    ).andThen(      
+    shoulder.pitchPIDCommand(
+      "foldIn",
+        () -> {
+          final double targetPosition = config.getFoldInShoulderSetpoint();
+          final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+          return targetPosition + offsetValue;
+        }
+      )
+    )
+  );
+
+  controlConfig.getFoldOutTrigger()
+  .toggleOnTrue(
+    makeDoAndWait(
+      shoulder.pitchPIDCommand(
+        "foldOut",
+          () -> {
+            final double targetPosition = config.getFoldOutShouderSetpoint();
+            final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+            return targetPosition + offsetValue;
+          }),
+          ()-> false
+          // shoulder::isAtSetpoint
+    ).andThen(armExtension.extensionPIDCommand("bottom", config::getFoldOutExtensionSetpoint))
+  );
+}
 
   private void configureWristBindings() {
     wrist.setDefaultCommand(

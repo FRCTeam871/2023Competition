@@ -35,4 +35,6 @@ public interface IControlConfig {
     Trigger getResetGyroTrigger();
 
     Trigger getFoldOutTrigger();
+
+    Trigger getFoldInTrigger();
 }

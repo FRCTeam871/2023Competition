@@ -34,7 +34,7 @@ public class XboxHotasControlConfig implements IControlConfig {
 
     @Override
     public double getShoulderAxisValue() {
-        return systemController.getGAxis();
+        return systemController.getRotary3();
     }
 
     @Override
@@ -103,5 +103,10 @@ public class XboxHotasControlConfig implements IControlConfig {
     @Override
     public Trigger getFoldOutTrigger() {
      return systemController.getSw(2);
+    }
+
+    @Override
+    public Trigger getFoldInTrigger() {
+        return systemController.getSw(4);
     }
 }

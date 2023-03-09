@@ -1,6 +1,7 @@
 package com.team871.controller;
 
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -66,10 +67,12 @@ public class CommandX56HotasThrottle {
     }
 
     public double getRotary3() {
+        SmartDashboard.putNumber("rotary3", hid.getRawAxis(ROTARY_3));
         return hid.getRawAxis(ROTARY_3);
     }
 
     public double getRotary4() {
+        SmartDashboard.putNumber("rotary4", hid.getRawAxis(ROTARY_4));
         return hid.getRawAxis(ROTARY_4);
     }
 

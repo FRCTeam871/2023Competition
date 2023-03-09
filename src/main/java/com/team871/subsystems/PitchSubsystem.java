@@ -37,9 +37,12 @@ public class PitchSubsystem extends SubsystemBase {
       double kd,
       final double lowClamp,
       final double highClamp,
-      final String subsystemName) {
+      final String subsystemName) 
+      
+      {
     this.motor = motor;
     this.pitchPID = new PIDController(kp, ki, kd);
+    pitchPID.setTolerance(10);
     this.pitchEncoder = pitchEncoder;
     this.subsystemName = subsystemName;
     this.lowClamp = lowClamp;
@@ -76,13 +79,14 @@ public class PitchSubsystem extends SubsystemBase {
     builder.addBooleanProperty("motorsEnabled", this::getMotorsEnabled, this::setMotorsEnabled);
   }
 
-  public CommandBase pitchPIDCommand(String name, DoubleSupplier setpointSupplier) {
-    final CommandBase command =
+  public PIDCommand pitchPIDCommand(String name, DoubleSupplier setpointSupplier) {
+    final PIDCommand command =
         new PIDCommand(pitchPID, pitchEncoder::getPitch, setpointSupplier, this::movePitch, this);
 
     command.setName(name);
     return command;
   }
+  
   // jules waz here =)
   public double getPositionThetaSetpointTest() {
     return positionThetaSetpointTest;
@@ -98,5 +102,9 @@ public class PitchSubsystem extends SubsystemBase {
 
   public CommandBase enableMotors() {
     return runOnce(() -> motorsEnabled = true);
+  }
+
+  public boolean isAtSetpoint() {
+    return pitchPID.atSetpoint();
   }
 }

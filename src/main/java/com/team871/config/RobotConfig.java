@@ -47,6 +47,12 @@ public class RobotConfig implements IRobot {
   private static final double bottomExtensionSetpoint = 6.274;
   private static final double restOnFrameSetpoint = 62;
 
+  private static final double foldOutShoulderSetpoint = 62;
+  private static final double foldOutExtensionSetpoint = 8;
+
+  private static final double foldInShoulderSetpoint = 90;
+  private static final double foldInExtensionSetpoint = 4;
+
   private static final double lowClamp = -1;
   private static final double highClamp = .05;
 
@@ -247,25 +253,21 @@ public class RobotConfig implements IRobot {
 
   @Override
   public double getFoldInShoulderSetpoint() {
-    // TODO Auto-generated method stub
-    return 0;
+    return foldInShoulderSetpoint;
   }
 
   @Override
   public double getFoldInExtensionSetpoint() {
-    // TODO Auto-generated method stub
-    return 0;
+    return foldInExtensionSetpoint;
   }
 
   @Override
   public double getFoldOutShouderSetpoint() {
-    // TODO Auto-generated method stub
-    return 0;
+    return foldOutShoulderSetpoint;
   }
 
   @Override
   public double getFoldOutExtensionSetpoint() {
-    // TODO Auto-generated method stub
-    return 0;
+    return foldOutExtensionSetpoint;
   }
 }

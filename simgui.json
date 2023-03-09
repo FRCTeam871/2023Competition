@@ -43,7 +43,7 @@
       "/SmartDashboard/rotate": "Command"
     },
     "windows": {
-      "/SmartDashboard/ArmExtension": {
+      "/SmartDashboard/Shoulder": {
         "window": {
           "visible": true
         }

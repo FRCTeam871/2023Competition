@@ -64,7 +64,8 @@ public class XboxOnlyControlConfig implements IControlConfig {
 
     @Override
     public Trigger getMiddleNodeTrigger() {
-        return systemController.a();
+        // return systemController.a();
+        return new Trigger();
     }
 
     @Override
@@ -103,6 +104,12 @@ public class XboxOnlyControlConfig implements IControlConfig {
     @Override
     public Trigger getFoldOutTrigger() {
         // TODO Auto-generated method stub
-        return null;
+        return systemController.y();
+    }
+
+    @Override
+    public Trigger getFoldInTrigger() {
+        // TODO Auto-generated method stub
+        return systemController.a();
     }
 }

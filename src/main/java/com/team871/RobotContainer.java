@@ -163,7 +163,11 @@ public class RobotContainer {
   }
 
   private void configureArmExtensionBindings() {
-    armExtension.manualExtensionCommand(controlConfig::getExtensionAxisValue);
+    armExtension.setDefaultCommand(armExtension.extensionPIDCommand("joystickSetpoint", ()-> {
+      double joystickSetpoint = (-controlConfig.getExtensionAxisValue() + 1)*(19.0/2);
+      return joystickSetpoint;
+    }
+    ));
     controlConfig.getHighNodeTrigger()
         .toggleOnTrue(
             armExtension.extensionPIDCommand(

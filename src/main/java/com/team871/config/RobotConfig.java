@@ -32,18 +32,18 @@ public class RobotConfig implements IRobot {
   private static final double shoulderZero = 1.44;
   private static final double shoulderNegative90Value = 2.2478;
 
-  private final double maxWristOffsetValue = 10;
+  private final double maxWristOffsetValue = 45;
   private static final double wristZeroOffset = -635;
 
-  private static final double topShoulderSetpoint = -2.7;
+  private static final double topShoulderSetpoint = -12.7;
   /** formerly 16.2 */
-  private static final double middleShoulderSetpoint = 20.2;
+  private static final double middleShoulderSetpoint = 13.2;
   /** formerly 62 */
   private static final double bottomShoulderSetpoint = 62;
 
   private static final double topExtensionSetpoint = 19;
-  private static final double middleExtensionSetpoint = 4.63;
-  private static final double bottomExtensionSetpoint = 15.274;
+  private static final double middleExtensionSetpoint = 0;
+  private static final double bottomExtensionSetpoint = 1.274;
   private static final double restOnFrameSetpoint = 62;
 
   private static final double lowClamp = -1;

@@ -13,15 +13,13 @@ import java.util.function.DoubleSupplier;
 
 public class ArmExtension extends SubsystemBase {
 
-  private static final double EXTENSION_PID_KP = 0.00012207;
+  private static final double EXTENSION_PID_KP = 0.45;
   private static final double EXTENSION_PID_KI = 0;
   private static final double EXTENSION_PID_KD = 0;
 
   private final MotorController extensionMotor;
   private final PIDController extensionPID;
   private final DistanceEncoder distanceEncoder;
-  
-  private double positionInchesSetpoint;
 
   public ArmExtension(final MotorController extensionMotor, final DistanceEncoder distanceEncoder) {
     this.extensionMotor = extensionMotor;
@@ -32,8 +30,6 @@ public class ArmExtension extends SubsystemBase {
     // SmartDashboard.putData("ExtensionPIDCommand", extensionPIDCommand());
     SmartDashboard.putData("extensionEncoder", distanceEncoder);
     SmartDashboard.putData("resetCommand", resetExtensionEncoderCommand());
-    SmartDashboard.putData(
-        "extensionCommand", extensionPIDCommand("ManualExtend", this::getPositionInchesSetpoint));
   }
 
   static double limitOutput(double rawInput, double currentDistance) {
@@ -58,9 +54,6 @@ public class ArmExtension extends SubsystemBase {
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
-
-    builder.addDoubleProperty(
-        "distanceSetpoint", this::getPositionInchesSetpoint, this::setPositionInchesSetpoint);
   }
 
   public void manualExtensionCommand(DoubleSupplier extension) {
@@ -86,11 +79,5 @@ public class ArmExtension extends SubsystemBase {
     return runOnce(distanceEncoder::reset);
   }
 
-  public double getPositionInchesSetpoint() {
-    return positionInchesSetpoint;
-  }
 
-  public double setPositionInchesSetpoint(double positionInchesSetpoint) {
-    return positionInchesSetpoint;
-  }
 }

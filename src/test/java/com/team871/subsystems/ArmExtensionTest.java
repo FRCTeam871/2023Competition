@@ -10,11 +10,11 @@ class ArmExtensionTest {
 
   @Test
   void testSafetyRamp() {
-    // assertEquals(-1,ArmExtension.safetyRampExtend(-1, 4));
-    // assertEquals(-.1,ArmExtension.safetyRampExtend(-1, 0));
-    // assertEquals(-.5,ArmExtension.safetyRampExtend(-1, 1.5));
+    assertEquals(-1, ArmExtension.limitOutput(-1, 4));
+    assertEquals(-.3, ArmExtension.limitOutput(-1, 0));
+    assertEquals(-.5, ArmExtension.limitOutput(-1, 1.5));
 
-    // assertEquals(-.3,ArmExtension.safetyRamp(-.3, 1.5));
-    // assertEquals(-.5/3,ArmExtension.safetyRamp(-.3, .5));
+    assertEquals(-.3, ArmExtension.limitOutput(-.3, 1.5));
+    assertEquals(-.5/3, ArmExtension.limitOutput(-.3, .5));
   }
 }

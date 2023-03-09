@@ -20,12 +20,14 @@ public class ArmExtension extends SubsystemBase {
   private final MotorController extensionMotor;
   private final PIDController extensionPID;
   private final DistanceEncoder distanceEncoder;
+  
   private double positionInchesSetpoint;
 
   public ArmExtension(final MotorController extensionMotor, final DistanceEncoder distanceEncoder) {
     this.extensionMotor = extensionMotor;
     this.extensionPID = new PIDController(EXTENSION_PID_KP, EXTENSION_PID_KI, EXTENSION_PID_KD);
     this.distanceEncoder = distanceEncoder;
+    
     SmartDashboard.putData("extensionPID", extensionPID);
     // SmartDashboard.putData("ExtensionPIDCommand", extensionPIDCommand());
     SmartDashboard.putData("extensionEncoder", distanceEncoder);
@@ -34,29 +36,23 @@ public class ArmExtension extends SubsystemBase {
         "extensionCommand", extensionPIDCommand("ManualExtend", this::getPositionInchesSetpoint));
   }
 
-  public static double safetyRampRetract(double rawInput, double currentDistance) {
-    /** negative output is retracting, so we have to use biggest number not smallest */
-    double maxoutput = Math.max(currentDistance / 3, .3);
-    return Math.max(-maxoutput, rawInput);
-  }
-
-  public static double safetyRampExtend(double rawInput, double currentDistance) {
-    double maxoutput = Math.max(16 / currentDistance, .3);
-    return Math.min(maxoutput, rawInput);
+  static double limitOutput(double rawInput, double currentDistance) {
+    if (rawInput < 0) {
+      double maxoutput = Math.max(currentDistance / 3, .3);
+      return Math.max(-maxoutput, rawInput);
+    } else {
+      double maxoutput = Math.max(16 / currentDistance, .3);
+      return Math.min(maxoutput, rawInput);
+    }
   }
 
   /**
    * @param output retract is negative, extend is positive, output between -1 and 1
    */
   public void moveExtension(final double output) {
-    double adjustedOuputRetract = safetyRampRetract(output, distanceEncoder.getDistance());
-    double adjustedOuputExtend = safetyRampExtend(output, distanceEncoder.getDistance());
-    SmartDashboard.putNumber("extensionMotorOutput", adjustedOuputExtend);
-    if (output < 0) {
-      extensionMotor.set(adjustedOuputRetract);
-    } else {
-      extensionMotor.set(adjustedOuputExtend);
-    }
+    double limitedOutput = limitOutput(output, distanceEncoder.getDistance());
+    SmartDashboard.putNumber("extensionMotorOutput", limitedOutput);
+    extensionMotor.set(limitedOutput);
   }
 
   @Override

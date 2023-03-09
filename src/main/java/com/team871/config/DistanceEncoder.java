@@ -9,5 +9,7 @@ public interface DistanceEncoder extends Sendable {
    */
   double getDistance();
 
+  double getRawValue();
+
   void reset();
 }

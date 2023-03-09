@@ -7,17 +7,17 @@ public class SRXAnalogEncoderTalonSRX implements PitchEncoder {
 
   private final WPI_TalonSRX talon;
   private double zeroOffset;
-  private double degreesPerVolt;
+  private double degreesPerTick;
 
-  public SRXAnalogEncoderTalonSRX(WPI_TalonSRX talonSRX, double zeroOffset, double degreesPerVolt) {
+  public SRXAnalogEncoderTalonSRX(WPI_TalonSRX talonSRX, double zeroOffset, double degreesPerTick) {
 
     this.talon = talonSRX;
     this.zeroOffset = zeroOffset;
-    this.degreesPerVolt = degreesPerVolt;
+    this.degreesPerTick = degreesPerTick;
   }
   // this is a test method
   public double calculateDegrees(double rawInput) {
-    return (rawInput - zeroOffset) * degreesPerVolt;
+    return (rawInput - zeroOffset) * degreesPerTick;
   }
 
   @Override
@@ -26,8 +26,14 @@ public class SRXAnalogEncoderTalonSRX implements PitchEncoder {
   }
 
   @Override
+  public double getRawValue() {
+    return talon.getSelectedSensorPosition();
+  }
+
+  @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("pitch", this::getPitch, null);
+    builder.addDoubleProperty("rawValue", this::getRawValue, null);
   }
 
   @Override

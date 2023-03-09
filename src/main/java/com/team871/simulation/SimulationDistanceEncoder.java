@@ -24,4 +24,10 @@ public class SimulationDistanceEncoder implements DistanceEncoder {
   public void reset() {
     this.distance = 0;
   }
+
+  @Override
+  public double getRawValue() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

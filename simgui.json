@@ -1,7 +1,24 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "SPARK MAX [5]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/MecanumDrive[1]": "MecanumDrive",
+      "/LiveWindow/Ungrouped/MotorControllerGroup[1]": "Motor Controller",
+      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/LiveWindow/Ungrouped/Talon SRX [10]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon SRX [8]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon SRX [9]": "Motor Controller",
+      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
       "/SmartDashboard/ArmExtension": "Subsystem",
       "/SmartDashboard/BalanceCommand": "Command",
       "/SmartDashboard/BalancePID": "PIDController",
@@ -9,7 +26,6 @@
       "/SmartDashboard/DisableMotorsCommand": "Command",
       "/SmartDashboard/DriveTrain": "Subsystem",
       "/SmartDashboard/EnableMotorsCommand": "Command",
-      "/SmartDashboard/ExtensionPIDCommand": "Command",
       "/SmartDashboard/RotationPID": "PIDController",
       "/SmartDashboard/Shoulder": "Subsystem",
       "/SmartDashboard/Shoulder-DisableMotorsCommand": "Command",
@@ -20,20 +36,46 @@
       "/SmartDashboard/Wrist-EnableMotorsCommand": "Command",
       "/SmartDashboard/Wrist-PitchPID": "PIDController",
       "/SmartDashboard/driveDuration": "Command",
+      "/SmartDashboard/extensionCommand": "Command",
       "/SmartDashboard/extensionPID": "PIDController",
+      "/SmartDashboard/resetCommand": "Command",
       "/SmartDashboard/resetGyro": "Command",
       "/SmartDashboard/rotate": "Command"
     },
     "windows": {
+      "/SmartDashboard/ArmExtension": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Shoulder-PitchPID": {
         "window": {
           "visible": true
         }
       },
-      "/SmartDashboard/Wrist-PitchPID": {
+      "/SmartDashboard/extensionCommand": {
         "window": {
           "visible": true
         }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "ArmExtension": {
+          "open": true
+        },
+        "Shoulder": {
+          "open": true
+        },
+        "Shoulder-PitchEncoder": {
+          "open": true
+        },
+        "Shoulder-PitchPID": {
+          "open": true
+        },
+        "open": true
       }
     }
   }

@@ -23,4 +23,10 @@ public class SimulationPitchEncoder implements PitchEncoder {
   public void reset() {
     this.pitch = 0;
   }
+
+  @Override
+  public double getRawValue() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

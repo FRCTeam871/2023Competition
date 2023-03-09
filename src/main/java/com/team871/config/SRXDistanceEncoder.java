@@ -17,6 +17,7 @@ public class SRXDistanceEncoder implements DistanceEncoder {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("distance", this::getDistance, null);
+    builder.addDoubleProperty("rawInput", this::getRawValue, null);
   }
 
   @Override
@@ -27,5 +28,10 @@ public class SRXDistanceEncoder implements DistanceEncoder {
   @Override
   public void reset() {
     talon.getSensorCollection().setQuadraturePosition(0, 0);
+  }
+
+  @Override
+  public double getRawValue() {
+    return talon.getSelectedSensorPosition();
   }
 }

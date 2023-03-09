@@ -2,7 +2,6 @@ package com.team871.config;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public interface IRobot {
   /**
@@ -42,10 +41,6 @@ public interface IRobot {
    */
   IGyro gyro();
 
-  CommandXboxController getDrivetrainContoller();
-
-  CommandXboxController getArmController();
-
   PIDController getBalancePID();
 
   DistanceEncoder getExtensionEncoder();
@@ -54,15 +49,25 @@ public interface IRobot {
 
   PitchEncoder getShoulderPitchEncoder();
 
-  double getLeftXDeadband();
-
-  double getLeftYDeadband();
-
-  double getRightXDeadband();
-
-  double getRightYDeadband();
-
   double getMaxOffsetWristValue();
 
   double getMaxOffsetShoulderValue();
+
+  double getTopShoulderSetpoint();
+
+  double getMiddleShoulderSetpoint();
+
+  double getBottomShoulderSetpoint();
+
+  double getTopExtensionSetpoint();
+
+  double getMiddleExtensionSetpoint();
+
+  double getBottomExtensionSetpoint();
+
+  double getRestOnFrameSetpoint();
+
+  double getShoulderLowClampValue();
+
+  double getShoulderHighClampValue();
 }

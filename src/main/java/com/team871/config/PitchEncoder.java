@@ -9,4 +9,6 @@ public interface PitchEncoder extends Sendable {
   double getPitch();
 
   void reset();
+
+  double getRawValue();
 }

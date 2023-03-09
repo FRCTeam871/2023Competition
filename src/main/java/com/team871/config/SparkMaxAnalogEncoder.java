@@ -16,7 +16,7 @@ public class SparkMaxAnalogEncoder implements PitchEncoder {
     this.zeroOffset = zeroOffset;
     this.degreesPerVolt = degreesPerVolt;
   }
-  // this is a test method
+
   public double calculateDegrees(double rawInput) {
     return (rawInput - zeroOffset) * degreesPerVolt;
   }
@@ -28,8 +28,14 @@ public class SparkMaxAnalogEncoder implements PitchEncoder {
   }
 
   @Override
+  public double getRawValue() {
+    return CANSparkMax.getAnalog(SparkMaxAnalogSensor.Mode.kAbsolute).getPosition();
+  }
+
+  @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("pitch", this::getPitch, null);
+    builder.addDoubleProperty("rawValue", this::getRawValue, null);
   }
 
   @Override

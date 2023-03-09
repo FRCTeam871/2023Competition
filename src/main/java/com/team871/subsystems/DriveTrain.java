@@ -3,7 +3,6 @@ package com.team871.subsystems;
 import com.team871.config.IGyro;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,6 +10,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import java.util.function.DoubleSupplier;
 
 public class DriveTrain extends SubsystemBase {
 
@@ -69,15 +70,12 @@ public class DriveTrain extends SubsystemBase {
     }
   }
 
-  public CommandBase defaultCommand(final XboxController xboxController) {
-    CommandBase defaultCommand =
-        run(
-            () -> {
-              driveMecanum(
-                  exponentialDrive(-xboxController.getLeftY()),
-                  exponentialDrive(xboxController.getLeftX()),
-                  exponentialDrive(xboxController.getRightX()));
-            });
+  public CommandBase driveMechanumCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rotationSupplier) {
+    final CommandBase defaultCommand =
+        run(() -> driveMecanum(
+                exponentialDrive(xSupplier.getAsDouble()),
+                exponentialDrive(ySupplier.getAsDouble()),
+                exponentialDrive(rotationSupplier.getAsDouble())));
 
     defaultCommand.setName("DriveMechanumCommand");
     return defaultCommand;

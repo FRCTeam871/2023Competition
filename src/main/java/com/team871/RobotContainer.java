@@ -5,11 +5,7 @@
 
 package com.team871;
 
-import com.team871.config.Gyro;
-import com.team871.config.IGyro;
-import com.team871.config.IRobot;
-import com.team871.config.PitchEncoder;
-import com.team871.config.RobotConfig;
+import com.team871.config.*;
 import com.team871.dashboard.DriveTrainExtensions;
 import com.team871.simulation.SimulationGyro;
 import com.team871.simulation.SimulationPitchEncoder;
@@ -18,12 +14,10 @@ import com.team871.subsystems.Claw;
 import com.team871.subsystems.DriveTrain;
 import com.team871.subsystems.Intake;
 import com.team871.subsystems.PitchSubsystem;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -34,6 +28,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+
+  private final IControlConfig controlConfig;
+
   private final DriveTrain drivetrain;
   private final PitchSubsystem shoulder;
   private final ArmExtension armExtension;
@@ -45,8 +42,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    //    config = new RobotConfigFrisbro();
     config = new RobotConfig();
+    controlConfig = new XboxHotasControlConfig();
     gyro = RobotBase.isReal() ? new Gyro() : new SimulationGyro();
 
     drivetrain =
@@ -60,17 +57,28 @@ public class RobotContainer {
     final PitchEncoder shoulderPitchEncoder =
         RobotBase.isSimulation() ? new SimulationPitchEncoder() : config.getShoulderPitchEncoder();
 
+    // -90 is fully up, 0 is parallel to the ground, 90 is fully down. Down is negative motor output
     shoulder =
         new PitchSubsystem(
-            config.getShoulderMotor(), shoulderPitchEncoder, 0.032, 0, 0, "Shoulder", 0.3, 1);
+            config.getShoulderMotor(),
+            shoulderPitchEncoder,
+            0.032,
+            0,
+            0,
+            config.getShoulderLowClampValue(),
+            config.getShoulderHighClampValue(),
+            "Shoulder");
 
     final PitchEncoder wristPitchEncoder =
         RobotBase.isSimulation() ? new SimulationPitchEncoder() : config.getWristPitchEncoder();
 
-    wrist = new PitchSubsystem(config.getWristMotor(), wristPitchEncoder, 0.048, 0, 0, "Wrist", -1, 1);
+    /**
+     * 90 is fully up, 0 is parallel to the ground, -90 is fully down. Down is positive motor output
+     */
+    wrist =
+        new PitchSubsystem(config.getWristMotor(), wristPitchEncoder, 0.048, 0, 0, -1, 1, "Wrist");
     claw = new Claw(config.getClawMotor());
     intake = new Intake(config.getLeftIntakeMotor(), config.getRightIntakeMotor());
-
     armExtension = new ArmExtension(config.getArmExtensionMotor(), config.getExtensionEncoder());
 
     SmartDashboard.putData("DriveTrain", drivetrain);
@@ -83,12 +91,6 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
-
-    DriverStation.silenceJoystickConnectionWarning(true);
-
-    CommandScheduler.getInstance()
-        .setDefaultCommand(
-            drivetrain, drivetrain.defaultCommand(config.getDrivetrainContoller().getHID()));
 
     // Suppress "Joystick Button 2 on port 0 not available, check if controller is plugged in"
     // flooding in console
@@ -116,61 +118,83 @@ public class RobotContainer {
   }
 
   private void configureClawBindings() {
-    final CommandXboxController controller = config.getDrivetrainContoller();
-
-    claw.setDefaultCommand(
-        () -> MathUtil.applyDeadband(controller.getLeftTriggerAxis(), config.getLeftXDeadband()));
+    claw.setDefaultCommand(controlConfig::getClawAxisValue);
   }
 
   private void configureWristBindings() {
-    final CommandXboxController controller = config.getArmController();
-
     wrist.setDefaultCommand(
-        wrist.pitchPIDCommand(
+        wrist.pitchPIDCommand("FollowShoulder",
             () -> {
               final double targetPosition = config.getShoulderPitchEncoder().getPitch();
-              final double offsetValue =
-                  (MathUtil.applyDeadband(controller.getRightY(), config.getRightYDeadband()))
-                      * (config.getMaxOffsetWristValue());
-              return targetPosition * -1 + offsetValue;
+              final double offsetValue = controlConfig.getWristAxisValue() * config.getMaxOffsetWristValue();
+              return (targetPosition * -1) + offsetValue;
             }));
   }
 
   private void configureShoulderBindings() {
-    final CommandXboxController controller = config.getArmController();
-
     shoulder.setDefaultCommand(
-        shoulder.pitchPIDCommand(
-            () -> {
-              final double targetPosition = config.getShoulderPitchEncoder().getPitch();
-              //       return (targetPosition * 45) + 70;
-              final double offsetValue =
-                  (MathUtil.applyDeadband(controller.getLeftY(), config.getLeftYDeadband()))
-                      * (config.getMaxOffsetShoulderValue());
-              return targetPosition + offsetValue;
-            }));
+        shoulder.pitchPIDCommand("PickUp",
+            () -> (controlConfig.getShoulderAxisValue() * 45) + config.getRestOnFrameSetpoint()));
+
+    controlConfig.getHighNodeTrigger().toggleOnTrue(shoulder.pitchPIDCommand("HighNode",
+      () -> {
+        final double targetPosition = config.getTopShoulderSetpoint();
+        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+        return targetPosition + offsetValue;
+      }));
+
+    controlConfig.getMiddleNodeTrigger()
+        .toggleOnTrue(
+            shoulder.pitchPIDCommand("MiddleNode",
+      () -> {
+        final double targetPosition = config.getMiddleShoulderSetpoint();
+        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+        return targetPosition + offsetValue;
+      }));
+
+    controlConfig.getBottomNodeTrigger()
+        .toggleOnTrue(
+            shoulder.pitchPIDCommand("Bottom",
+      () -> {
+        final double targetPosition = config.getBottomShoulderSetpoint();
+        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+        return targetPosition + offsetValue;
+      }));
   }
 
   private void configureArmExtensionBindings() {
-    final CommandXboxController controller = config.getArmController();
-    armExtension.setdefaultCommand(
-        () -> MathUtil.applyDeadband(controller.getRightX(), config.getRightXDeadband()));
-
-    controller.b().toggleOnTrue(armExtension.extensionPIDCommand());
-    controller.x().onTrue(armExtension.resetExtensionEncoderCommand());
+    armExtension.setDefaultCommand(armExtension.extensionPIDCommand("joystickSetpoint", ()-> {
+      double joystickSetpoint = (-controlConfig.getExtensionAxisValue() + 1)*(19.0/2);
+      return joystickSetpoint;
+    }
+    ));
+    controlConfig.getHighNodeTrigger()
+        .toggleOnTrue(
+            armExtension.extensionPIDCommand(
+                "TopNode", config::getTopExtensionSetpoint));
+    controlConfig.getMiddleNodeTrigger()
+        .toggleOnTrue(
+            armExtension.extensionPIDCommand(
+                "MiddleNode", config::getMiddleExtensionSetpoint));
+    controlConfig.getBottomNodeTrigger()
+        .toggleOnTrue(
+            armExtension.extensionPIDCommand(
+                "BottomNode", config::getBottomExtensionSetpoint));
   }
 
   private void configureIntakeBindings() {
-    final CommandXboxController controller = config.getDrivetrainContoller();
-
-    controller.rightBumper().whileTrue(intake.run(intake::pullIn));
-    controller.leftBumper().whileTrue(intake.run(intake::pullOut));
+    controlConfig.getIntakeTrigger().whileTrue(intake.run(intake::pullIn));
+    controlConfig.getExhaustTrigger().whileTrue(intake.run(intake::pullOut));
   }
 
   private void configureDrivetrainControllerBindings() {
-    final CommandXboxController drivetrainController = config.getDrivetrainContoller();
-    drivetrainController.b().whileTrue(drivetrain.balanceCommand());
-    drivetrainController.leftBumper().whileTrue(gyro.resetGyroCommand());
+    drivetrain.setDefaultCommand(
+            drivetrain.driveMechanumCommand(
+                    controlConfig::getDriveXAxisValue,
+                    controlConfig::getDriveYAxisValue,
+                    controlConfig::getDriveRotationAxisValue));
+    controlConfig.getBalanceTrigger().whileTrue(drivetrain.balanceCommand());
+    controlConfig.getResetGyroTrigger().whileTrue(gyro.resetGyroCommand());
   }
 
   /**

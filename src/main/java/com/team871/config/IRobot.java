@@ -70,4 +70,12 @@ public interface IRobot {
   double getShoulderLowClampValue();
 
   double getShoulderHighClampValue();
+
+  double getFoldInShoulderSetpoint();
+
+  double getFoldInExtensionSetpoint();
+
+  double getFoldOutShouderSetpoint();
+
+  double getFoldOutExtensionSetpoint();
 }

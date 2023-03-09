@@ -96,7 +96,13 @@ public class XboxOnlyControlConfig implements IControlConfig {
         // The left and right trigger axes are actually the same axes.  The left trigger will make the axes go from 0
         // to -1,  while the right will go from 0 to + 1.  We can simply add the two together to get a single compound
         // axis that looks like one. Notably, if the driver pulls them both, they cancel out to 0.
-        final double compoundAxis = controller.getLeftTriggerAxis() + controller.getRightTriggerAxis();
+        final double compoundAxis = -controller.getLeftTriggerAxis() + controller.getRightTriggerAxis();
         return MathUtil.applyDeadband(compoundAxis, TRIGGER_DEADBAND);
+    }
+
+    @Override
+    public Trigger getFoldOutTrigger() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

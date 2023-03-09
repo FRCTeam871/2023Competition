@@ -121,6 +121,18 @@ public class RobotContainer {
     claw.setDefaultCommand(controlConfig::getClawAxisValue);
   }
 
+  public void configureCompositeCommands(){
+    controlConfig.getFoldOutTrigger()
+        .toggleOnTrue(
+            shoulder.pitchPIDCommand("Bottom",
+      () -> {
+        final double targetPosition = config.getBottomShoulderSetpoint();
+        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+        return targetPosition + offsetValue;
+      }).andThen(armExtension.extensionPIDCommand(
+        "bottom", config::getBottomExtensionSetpoint)));
+  }
+
   private void configureWristBindings() {
     wrist.setDefaultCommand(
         wrist.pitchPIDCommand("FollowShoulder",

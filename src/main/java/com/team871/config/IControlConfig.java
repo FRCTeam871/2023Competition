@@ -33,4 +33,6 @@ public interface IControlConfig {
     Trigger getBalanceTrigger();
 
     Trigger getResetGyroTrigger();
+
+    Trigger getFoldOutTrigger();
 }

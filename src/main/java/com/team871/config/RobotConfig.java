@@ -3,6 +3,7 @@ package com.team871.config;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -41,9 +42,9 @@ public class RobotConfig implements IRobot {
   /** formerly 62 */
   private static final double bottomShoulderSetpoint = 62;
 
-  private static final double topExtensionSetpoint = 19;
+  private static final double topExtensionSetpoint = 16;
   private static final double middleExtensionSetpoint = 0;
-  private static final double bottomExtensionSetpoint = 1.274;
+  private static final double bottomExtensionSetpoint = 6.274;
   private static final double restOnFrameSetpoint = 62;
 
   private static final double lowClamp = -1;
@@ -97,6 +98,7 @@ public class RobotConfig implements IRobot {
     armExtensionMotor.configReverseLimitSwitchSource(
         LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
     armExtensionMotor.configClearPositionOnLimitR(true, 0);
+    // armExtensionMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration().enable.);
 
     balancePID = new PIDController(0.03, 0.0, 0.0001);
 
@@ -241,5 +243,29 @@ public class RobotConfig implements IRobot {
   @Override
   public double getRestOnFrameSetpoint() {
     return restOnFrameSetpoint;
+  }
+
+  @Override
+  public double getFoldInShoulderSetpoint() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public double getFoldInExtensionSetpoint() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public double getFoldOutShouderSetpoint() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public double getFoldOutExtensionSetpoint() {
+    // TODO Auto-generated method stub
+    return 0;
   }
 }

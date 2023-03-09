@@ -60,6 +60,7 @@ public class PitchSubsystem extends SubsystemBase {
       motor.set(0);
     }
     SmartDashboard.putNumber(subsystemName + "-motorOutput", clampedOutput);
+    SmartDashboard.putNumber(subsystemName + "-rawMotorOutput", output);
   }
 
   public boolean isMotorsEnabled() {

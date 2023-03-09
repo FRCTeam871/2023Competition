@@ -41,7 +41,7 @@ public class ArmExtension extends SubsystemBase {
       double maxoutput = Math.max(currentDistance / 3, .3);
       return Math.max(-maxoutput, rawInput);
     } else {
-      double maxoutput = Math.max(16 / currentDistance, .3);
+      double maxoutput = Math.max((19 - currentDistance)/3, .3);
       return Math.min(maxoutput, rawInput);
     }
   }

@@ -46,8 +46,8 @@ public class RobotConfig implements IRobot {
   private static final double bottomExtensionSetpoint = 15.274;
   private static final double restOnFrameSetpoint = 62;
 
-  private static final double lowClamp = .05;
-  private static final double highClamp = -1;
+  private static final double lowClamp = -1;
+  private static final double highClamp = .05;
 
   public RobotConfig() {
     /* sets front left motor to CanSparkMax motor controller with device id 1 */

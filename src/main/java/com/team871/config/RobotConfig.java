@@ -50,10 +50,10 @@ public class RobotConfig implements IRobot {
   private static final double restOnFrameSetpoint = 62;
 
   private static final double foldOutShoulderSetpoint = 62;
-  private static final double foldOutExtensionSetpoint = 8;
+  private static final double foldOutExtensionSetpoint = 14;
 
   private static final double foldInShoulderSetpoint = 90;
-  private static final double foldInExtensionSetpoint = 4;
+  private static final double foldInExtensionSetpoint = 1;
 
   private static final double lowClamp = -1;
   private static final double highClamp = .05;

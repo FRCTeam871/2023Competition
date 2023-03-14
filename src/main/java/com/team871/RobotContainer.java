@@ -245,7 +245,9 @@ public class RobotContainer {
       double joystickSetpoint = (-controlConfig.getExtensionAxisValue() + 1) * (19.0 / 2);
       return joystickSetpoint;
     }));
-    controlConfig.getHomeExtensionTrigger().onTrue(armExtension.homeExtensionCommand(config.getIsExtensionRetracted()));
+    controlConfig.getHomeExtensionTrigger().onTrue(armExtension.homeExtensionCommand(config.getIsExtensionRetracted()).andThen(
+      armExtension.extensionPIDCommand("home", ()->1)
+    ));
     controlConfig.getHighNodeTrigger()
         .toggleOnTrue(
             armExtension.extensionPIDCommand(

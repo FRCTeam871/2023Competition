@@ -49,7 +49,7 @@ public class CommandX56HotasStick {
    * @return the left throttle value
    */
   public double getStickY() {
-    return hid.getRawAxis(Y_AXIS);
+    return -(hid.getRawAxis(Y_AXIS));
   }
 
   public double getRotation() {

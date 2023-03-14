@@ -2,8 +2,11 @@ package com.team871.subsystems;
 
 import com.team871.config.PitchEncoder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -20,6 +23,9 @@ public class PitchSubsystem extends SubsystemBase {
   private boolean motorsEnabled = true;
   private final double lowClamp;
   private final double highClamp;
+  private ArmFeedforward armFeedforward;
+  private double lastPosition;
+  private double lastTime;
 
   public void setMotorsEnabled(boolean motorsEnabled) {
     this.motorsEnabled = motorsEnabled;
@@ -37,9 +43,9 @@ public class PitchSubsystem extends SubsystemBase {
       double kd,
       final double lowClamp,
       final double highClamp,
-      final String subsystemName) 
-      
-      {
+      final String subsystemName,
+      double kg,
+      double kv) {
     this.motor = motor;
     this.pitchPID = new PIDController(kp, ki, kd);
     pitchPID.setTolerance(10);
@@ -47,6 +53,7 @@ public class PitchSubsystem extends SubsystemBase {
     this.subsystemName = subsystemName;
     this.lowClamp = lowClamp;
     this.highClamp = highClamp;
+    armFeedforward = new ArmFeedforward(0,kg ,kv );
     SmartDashboard.putData(subsystemName + "-PitchPID", pitchPID);
     SmartDashboard.putData(subsystemName + "-PitchEncoder", pitchEncoder);
     SmartDashboard.putData(subsystemName + "-DisableMotorsCommand", disableMotors());
@@ -65,6 +72,28 @@ public class PitchSubsystem extends SubsystemBase {
     SmartDashboard.putNumber(subsystemName + "-motorOutput", clampedOutput);
     SmartDashboard.putNumber(subsystemName + "-rawMotorOutput", output);
   }
+
+  public void movePitchFeedForward(final double output) {
+    double currentTime = Timer.getFPGATimestamp();
+    double currentPosition = pitchEncoder.getPitch();
+    double velocityDegPerS = (currentPosition-lastPosition)/(currentTime-lastTime);
+    double outputFeedForward = armFeedforward.calculate(Math.toRadians(pitchEncoder.getPitch()), Math.toRadians(velocityDegPerS));
+    // double clampedOutput = MathUtil.clamp(outputFeedForward, lowClamp*12, highClamp*12);
+    double clampedOutput = output + outputFeedForward;
+    if (motorsEnabled) {
+      // motor.set(output);
+      motor.setVoltage(clampedOutput);
+    } else {
+      motor.setVoltage(0);
+    }
+    lastTime = currentTime;
+    lastPosition = currentPosition;
+    SmartDashboard.putNumber(subsystemName + "-motorOutput", clampedOutput);
+    SmartDashboard.putNumber(subsystemName + "-rawMotorOutput", output);
+    SmartDashboard.putNumber(subsystemName + "velocityDegreesPerSec", velocityDegPerS);
+    SmartDashboard.putNumber(subsystemName + "feedForward", outputFeedForward);
+  }
+
 
   public boolean isMotorsEnabled() {
     return motorsEnabled;
@@ -87,7 +116,14 @@ public class PitchSubsystem extends SubsystemBase {
     return command;
   }
   
-  // jules waz here =)
+  public PIDCommand pitchPIDFeedForwardCommand(String name, DoubleSupplier setpointSupplier) {
+    final PIDCommand command =
+        new PIDCommand(pitchPID, pitchEncoder::getPitch, setpointSupplier, this::movePitchFeedForward, this);
+
+    command.setName(name);
+    return command;
+  }
+
   public double getPositionThetaSetpointTest() {
     return positionThetaSetpointTest;
   }

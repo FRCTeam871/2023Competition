@@ -109,4 +109,15 @@ public class XboxHotasControlConfig implements IControlConfig {
     public Trigger getFoldInTrigger() {
         return systemController.getSw(4);
     }
+
+    @Override
+    public Trigger getHomeExtensionTrigger() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Trigger getPickupTrigger() {
+        return systemController.getSw(6);
+    }
 }

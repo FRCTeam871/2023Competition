@@ -1,9 +1,10 @@
 package com.team871.config;
 
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -45,6 +46,9 @@ public class RobotConfig implements IRobot {
   private static final double topExtensionSetpoint = 16;
   private static final double middleExtensionSetpoint = 0;
   private static final double bottomExtensionSetpoint = 6.274;
+  private static final double pickupExtensionSetpoint = 15;
+
+
   private static final double restOnFrameSetpoint = 62;
 
   private static final double foldOutShoulderSetpoint = 62;
@@ -80,6 +84,7 @@ public class RobotConfig implements IRobot {
     shoulderMotor = new CANSparkMax(5, CANSparkMaxLowLevel.MotorType.kBrushless);
     shoulderMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     shoulderMotor.setInverted(true);
+
     /** TODO set limit switches */
     leftIntakeMotor = new CANSparkMax(6, CANSparkMaxLowLevel.MotorType.kBrushless);
     leftIntakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -92,6 +97,8 @@ public class RobotConfig implements IRobot {
     wristMotor = new WPI_TalonSRX(10);
     wristMotor.setNeutralMode(NeutralMode.Brake);
     wristMotor.setInverted(true);
+    wristMotor.configPeakCurrentLimit(15);
+    wristMotor.configPeakCurrentDuration(250);
 
     clawMotor = new WPI_TalonSRX(9);
     clawMotor.setNeutralMode(NeutralMode.Brake);
@@ -104,7 +111,8 @@ public class RobotConfig implements IRobot {
     armExtensionMotor.configReverseLimitSwitchSource(
         LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
     armExtensionMotor.configClearPositionOnLimitR(true, 0);
-    // armExtensionMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration().enable.);
+    armExtensionMotor.configPeakCurrentLimit(20);
+    armExtensionMotor.configPeakCurrentDuration(250);
 
     balancePID = new PIDController(0.03, 0.0, 0.0001);
 
@@ -269,5 +277,14 @@ public class RobotConfig implements IRobot {
   @Override
   public double getFoldOutExtensionSetpoint() {
     return foldOutExtensionSetpoint;
+  }
+
+  public BooleanSupplier getIsExtensionRetracted() {
+    return () -> armExtensionMotor.isRevLimitSwitchClosed()==1;
+  }
+
+  @Override
+  public double getPickupExtensionSetpoint() {
+    return pickupExtensionSetpoint;
   }
 }

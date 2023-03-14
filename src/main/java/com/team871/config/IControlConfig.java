@@ -26,6 +26,8 @@ public interface IControlConfig {
 
     Trigger getBottomNodeTrigger();
 
+    Trigger getPickupTrigger();
+
     Trigger getIntakeTrigger();
 
     Trigger getExhaustTrigger();
@@ -37,4 +39,6 @@ public interface IControlConfig {
     Trigger getFoldOutTrigger();
 
     Trigger getFoldInTrigger();
+
+    Trigger getHomeExtensionTrigger();
 }

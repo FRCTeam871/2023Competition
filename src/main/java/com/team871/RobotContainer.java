@@ -47,8 +47,8 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     config = new RobotConfig();
-    controlConfig = new XboxHotasControlConfig();
-    // controlConfig = new XboxOnlyControlConfig();
+    // controlConfig = new XboxHotasControlConfig();
+    controlConfig = new XboxOnlyControlConfig();
     gyro = RobotBase.isReal() ? new Gyro() : new SimulationGyro();
 
     drivetrain =
@@ -67,12 +67,14 @@ public class RobotContainer {
         new PitchSubsystem(
             config.getShoulderMotor(),
             shoulderPitchEncoder,
-            0.032,
+            0.1,
             0,
             0,
             config.getShoulderLowClampValue(),
             config.getShoulderHighClampValue(),
-            "Shoulder");
+            "Shoulder", 
+            -1.5,
+            1);
 
     final PitchEncoder wristPitchEncoder =
         RobotBase.isSimulation() ? new SimulationPitchEncoder() : config.getWristPitchEncoder();
@@ -81,7 +83,7 @@ public class RobotContainer {
      * 90 is fully up, 0 is parallel to the ground, -90 is fully down. Down is positive motor output
      */
     wrist =
-        new PitchSubsystem(config.getWristMotor(), wristPitchEncoder, 0.048, 0, 0, -1, 1, "Wrist");
+        new PitchSubsystem(config.getWristMotor(), wristPitchEncoder, 0.048, 0, 0, -1, 1, "Wrist", 0 ,0);
     claw = new Claw(config.getClawMotor());
     intake = new Intake(config.getLeftIntakeMotor(), config.getRightIntakeMotor());
     armExtension = new ArmExtension(config.getArmExtensionMotor(), config.getExtensionEncoder());
@@ -122,6 +124,7 @@ public class RobotContainer {
     configureArmExtensionBindings();
   }
 
+
   private void configureClawBindings() {
     claw.setDefaultCommand(controlConfig::getClawAxisValue);
   }
@@ -158,7 +161,7 @@ public class RobotContainer {
       ()->false
       // armExtension::isAtSetpoint
     ).andThen(      
-    shoulder.pitchPIDCommand(
+    shoulder.pitchPIDFeedForwardCommand(
       "foldIn",
         () -> {
           final double targetPosition = config.getFoldInShoulderSetpoint();
@@ -172,7 +175,7 @@ public class RobotContainer {
   controlConfig.getFoldOutTrigger()
   .toggleOnTrue(
     makeDoAndWait(
-      shoulder.pitchPIDCommand(
+      shoulder.pitchPIDFeedForwardCommand(
         "foldOut",
           () -> {
             final double targetPosition = config.getFoldOutShouderSetpoint();
@@ -197,10 +200,10 @@ public class RobotContainer {
 
   private void configureShoulderBindings() {
     shoulder.setDefaultCommand(
-        shoulder.pitchPIDCommand("PickUp",
+        shoulder.pitchPIDFeedForwardCommand("PickUp",
             () -> (controlConfig.getShoulderAxisValue() * 45) + config.getRestOnFrameSetpoint()));
 
-    controlConfig.getHighNodeTrigger().toggleOnTrue(shoulder.pitchPIDCommand("HighNode",
+    controlConfig.getHighNodeTrigger().toggleOnTrue(shoulder.pitchPIDFeedForwardCommand("HighNode",
       () -> {
         final double targetPosition = config.getTopShoulderSetpoint();
         final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
@@ -209,7 +212,7 @@ public class RobotContainer {
 
     controlConfig.getMiddleNodeTrigger()
         .toggleOnTrue(
-            shoulder.pitchPIDCommand("MiddleNode",
+            shoulder.pitchPIDFeedForwardCommand("MiddleNode",
       () -> {
         final double targetPosition = config.getMiddleShoulderSetpoint();
         final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
@@ -218,7 +221,16 @@ public class RobotContainer {
 
     controlConfig.getBottomNodeTrigger()
         .toggleOnTrue(
-            shoulder.pitchPIDCommand("Bottom",
+            shoulder.pitchPIDFeedForwardCommand("Bottom",
+      () -> {
+        final double targetPosition = config.getBottomShoulderSetpoint();
+        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+        return targetPosition + offsetValue;
+      }));
+
+      controlConfig.getPickupTrigger()
+        .toggleOnTrue(
+            shoulder.pitchPIDFeedForwardCommand("Pickup",
       () -> {
         final double targetPosition = config.getBottomShoulderSetpoint();
         final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
@@ -232,6 +244,7 @@ public class RobotContainer {
       return joystickSetpoint;
     }
     ));
+    controlConfig.getHomeExtensionTrigger().onTrue(armExtension.homeExtensionCommand(config.getIsExtensionRetracted()));
     controlConfig.getHighNodeTrigger()
         .toggleOnTrue(
             armExtension.extensionPIDCommand(
@@ -244,6 +257,11 @@ public class RobotContainer {
         .toggleOnTrue(
             armExtension.extensionPIDCommand(
                 "BottomNode", config::getBottomExtensionSetpoint));
+
+    controlConfig.getPickupTrigger()
+        .toggleOnTrue(
+            armExtension.extensionPIDCommand(
+                "Pickup", config::getPickupExtensionSetpoint));
   }
 
   private void configureIntakeBindings() {
@@ -267,8 +285,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    //        return Autos.exampleAuto(exampleSubsystem);
-    return null;
+    return   armExtension.homeExtensionCommand(config.getIsExtensionRetracted());
   }
 }

@@ -7,8 +7,11 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class ArmExtension extends SubsystemBase {
@@ -83,6 +86,8 @@ public class ArmExtension extends SubsystemBase {
   public boolean isAtSetpoint() {
     return extensionPID.atSetpoint();
   }
-
-
+ 
+  public CommandBase homeExtensionCommand (BooleanSupplier isAtLimit){
+   return run(() -> moveExtension(-.5)).until(isAtLimit);
+  }
 }

@@ -59,18 +59,17 @@ public class XboxOnlyControlConfig implements IControlConfig {
 
     @Override
     public Trigger getHighNodeTrigger() {
-        return systemController.b();
+        return systemController.y();
     }
 
     @Override
     public Trigger getMiddleNodeTrigger() {
-        // return systemController.a();
-        return new Trigger();
+        return systemController.b();
     }
 
     @Override
     public Trigger getBottomNodeTrigger() {
-        return systemController.x();
+        return systemController.a();
     }
 
     @Override
@@ -103,13 +102,22 @@ public class XboxOnlyControlConfig implements IControlConfig {
 
     @Override
     public Trigger getFoldOutTrigger() {
-        // TODO Auto-generated method stub
-        return systemController.y();
+        return systemController.start();
     }
 
     @Override
     public Trigger getFoldInTrigger() {
+        return systemController.back();
+    }
+
+    @Override
+    public Trigger getHomeExtensionTrigger() {
+        return driveController.x();
+    }
+
+    @Override
+    public Trigger getPickupTrigger() {
         // TODO Auto-generated method stub
-        return systemController.a();
+        return systemController.x();
     }
 }

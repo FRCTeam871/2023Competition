@@ -159,30 +159,35 @@ public class RobotContainer {
   }
 
   public void configureCompositeCommands() {
-    controlConfig.getFoldInTrigger().onTrue(
-        armExtension.extensionPIDCommand("FoldIn", config::getFoldInExtensionSetpoint)
-            .asProxy()
-            .until(armExtension::isAtSetpoint)
-            .andThen(shoulder.pitchPIDFeedForwardCommand("FoldIn",
-                () -> {
-                  final double targetPosition = config.getFoldInShoulderSetpoint();
-                  final double offsetValue = controlConfig.getShoulderAxisValue()
-                      * config.getMaxOffsetShoulderValue();
-                  return targetPosition + offsetValue;
-                }).asProxy()
-            ));
+    controlConfig.getFoldInTrigger()
+        .onTrue(
+            makeDoAndWait(
+                armExtension.extensionPIDCommand(
+                    "FoldIn", config::getFoldInExtensionSetpoint),
+                armExtension::isAtSetpoint).andThen(
+                    Commands.runOnce(() -> shoulder.pitchPIDFeedForwardCommand(
+                        "FoldIn",
+                        () -> {
+                          final double targetPosition = config.getFoldInShoulderSetpoint();
+                          final double offsetValue = controlConfig.getShoulderAxisValue()
+                              * config.getMaxOffsetShoulderValue();
+                          return targetPosition + offsetValue;
+                        }).schedule()
+                        )));
 
-    controlConfig.getFoldOutTrigger().onTrue(
-        shoulder.pitchPIDFeedForwardCommand("FoldOut",
-            () -> {
-              final double targetPosition = config.getFoldOutShouderSetpoint();
-              final double offsetValue = controlConfig.getShoulderAxisValue()
-                  * config.getMaxOffsetShoulderValue();
-              return targetPosition + offsetValue;
-            })
-            .asProxy()
-            .until(shoulder::isAtSetpoint)
-            .andThen(armExtension.extensionPIDCommand("FoldOut", config::getFoldOutExtensionSetpoint).asProxy()));
+    controlConfig.getFoldOutTrigger()
+        .onTrue(
+            makeDoAndWait(
+                shoulder.pitchPIDFeedForwardCommand(
+                    "FoldOut",
+                    () -> {
+                      final double targetPosition = config.getFoldOutShouderSetpoint();
+                      final double offsetValue = controlConfig.getShoulderAxisValue()
+                          * config.getMaxOffsetShoulderValue();
+                      return targetPosition + offsetValue;
+                    }),
+                    shoulder::isAtSetpoint
+            ).andThen(Commands.runOnce(() -> armExtension.extensionPIDCommand("FoldOut", config::getFoldOutExtensionSetpoint).schedule())));
   }
 
   private void configureWristBindings() {

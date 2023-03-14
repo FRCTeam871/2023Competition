@@ -7,10 +7,8 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -29,7 +27,7 @@ public class ArmExtension extends SubsystemBase {
     this.extensionPID = new PIDController(EXTENSION_PID_KP, EXTENSION_PID_KI, EXTENSION_PID_KD);
     extensionPID.setTolerance(0.5);
     this.distanceEncoder = distanceEncoder;
-    
+
     SmartDashboard.putData("extensionPID", extensionPID);
     // SmartDashboard.putData("ExtensionPIDCommand", extensionPIDCommand());
     SmartDashboard.putData("extensionEncoder", distanceEncoder);
@@ -41,7 +39,7 @@ public class ArmExtension extends SubsystemBase {
       double maxoutput = Math.max(currentDistance / 3, .3);
       return Math.max(-maxoutput, rawInput);
     } else {
-      double maxoutput = Math.max((19 - currentDistance)/3, .3);
+      double maxoutput = Math.max((19 - currentDistance) / 3, .3);
       return Math.min(maxoutput, rawInput);
     }
   }
@@ -86,8 +84,8 @@ public class ArmExtension extends SubsystemBase {
   public boolean isAtSetpoint() {
     return extensionPID.atSetpoint();
   }
- 
-  public CommandBase homeExtensionCommand (BooleanSupplier isAtLimit){
-   return run(() -> moveExtension(-.5)).until(isAtLimit);
+
+  public CommandBase homeExtensionCommand(BooleanSupplier isAtLimit) {
+    return run(() -> moveExtension(-.5)).until(isAtLimit);
   }
 }

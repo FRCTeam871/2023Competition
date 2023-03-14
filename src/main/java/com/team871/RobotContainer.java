@@ -201,8 +201,8 @@ public class RobotContainer {
   }
 
   private void configureShoulderBindings() {
-    shoulder.setDefaultCommand(
-        shoulder.pitchPIDFeedForwardCommand("PickUp",
+    controlConfig.getManualControl().onTrue(
+        shoulder.pitchPIDFeedForwardCommand("Manual",
             () -> (controlConfig.getShoulderAxisValue() * 45) + config.getRestOnFrameSetpoint()));
 
     controlConfig.getHighNodeTrigger().toggleOnTrue(shoulder.pitchPIDFeedForwardCommand("HighNode",
@@ -241,7 +241,7 @@ public class RobotContainer {
   }
 
   private void configureArmExtensionBindings() {
-    armExtension.setDefaultCommand(armExtension.extensionPIDCommand("joystickSetpoint", () -> {
+    controlConfig.getManualControl().onTrue(armExtension.extensionPIDCommand("joystickSetpoint", () -> {
       double joystickSetpoint = (-controlConfig.getExtensionAxisValue() + 1) * (19.0 / 2);
       return joystickSetpoint;
     }));

@@ -1,7 +1,5 @@
 package com.team871.config;
 
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -10,6 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import java.util.function.BooleanSupplier;
 
 public class RobotConfig implements IRobot {
   private final CANSparkMax frontLeft;
@@ -47,7 +46,6 @@ public class RobotConfig implements IRobot {
   private static final double middleExtensionSetpoint = 0;
   private static final double bottomExtensionSetpoint = 6.274;
   private static final double pickupExtensionSetpoint = 15;
-
 
   private static final double restOnFrameSetpoint = 62;
 
@@ -280,7 +278,7 @@ public class RobotConfig implements IRobot {
   }
 
   public BooleanSupplier getIsExtensionRetracted() {
-    return () -> armExtensionMotor.isRevLimitSwitchClosed()==1;
+    return () -> armExtensionMotor.isRevLimitSwitchClosed() == 1;
   }
 
   @Override

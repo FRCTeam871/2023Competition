@@ -19,9 +19,7 @@ class ArmExtensionTest {
 
     assertEquals(1, ArmExtension.limitOutput(1, 16));
     assertEquals(.5, ArmExtension.limitOutput(1, 17.5));
-    assertEquals(.3, ArmExtension.limitOutput(.3, 17.5));    
-    assertEquals(.5/3, ArmExtension.limitOutput(1, 18.5));
-
-
+    assertEquals(.3, ArmExtension.limitOutput(.3, 17.5));
+    assertEquals(.5 / 3, ArmExtension.limitOutput(1, 18.5));
   }
 }

@@ -4,7 +4,6 @@ import com.team871.config.PitchEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -53,7 +52,7 @@ public class PitchSubsystem extends SubsystemBase {
     this.subsystemName = subsystemName;
     this.lowClamp = lowClamp;
     this.highClamp = highClamp;
-    armFeedforward = new ArmFeedforward(0,kg ,kv );
+    armFeedforward = new ArmFeedforward(0, kg, kv);
     SmartDashboard.putData(subsystemName + "-PitchPID", pitchPID);
     SmartDashboard.putData(subsystemName + "-PitchEncoder", pitchEncoder);
     SmartDashboard.putData(subsystemName + "-DisableMotorsCommand", disableMotors());
@@ -76,8 +75,10 @@ public class PitchSubsystem extends SubsystemBase {
   public void movePitchFeedForward(final double output) {
     double currentTime = Timer.getFPGATimestamp();
     double currentPosition = pitchEncoder.getPitch();
-    double velocityDegPerS = (currentPosition-lastPosition)/(currentTime-lastTime);
-    double outputFeedForward = armFeedforward.calculate(Math.toRadians(pitchEncoder.getPitch()), Math.toRadians(velocityDegPerS));
+    double velocityDegPerS = (currentPosition - lastPosition) / (currentTime - lastTime);
+    double outputFeedForward =
+        armFeedforward.calculate(
+            Math.toRadians(pitchEncoder.getPitch()), Math.toRadians(velocityDegPerS));
     // double clampedOutput = MathUtil.clamp(outputFeedForward, lowClamp*12, highClamp*12);
     double clampedOutput = output + outputFeedForward;
     if (motorsEnabled) {
@@ -93,7 +94,6 @@ public class PitchSubsystem extends SubsystemBase {
     SmartDashboard.putNumber(subsystemName + "velocityDegreesPerSec", velocityDegPerS);
     SmartDashboard.putNumber(subsystemName + "feedForward", outputFeedForward);
   }
-
 
   public boolean isMotorsEnabled() {
     return motorsEnabled;
@@ -115,10 +115,11 @@ public class PitchSubsystem extends SubsystemBase {
     command.setName(name);
     return command;
   }
-  
+
   public PIDCommand pitchPIDFeedForwardCommand(String name, DoubleSupplier setpointSupplier) {
     final PIDCommand command =
-        new PIDCommand(pitchPID, pitchEncoder::getPitch, setpointSupplier, this::movePitchFeedForward, this);
+        new PIDCommand(
+            pitchPID, pitchEncoder::getPitch, setpointSupplier, this::movePitchFeedForward, this);
 
     command.setName(name);
     return command;

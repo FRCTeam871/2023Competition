@@ -79,7 +79,7 @@ public interface IRobot {
 
   double getFoldInExtensionSetpoint();
 
-  double getFoldOutShouderSetpoint();
+  double getFoldOutShoulderSetpoint();
 
   double getFoldOutExtensionSetpoint();
 

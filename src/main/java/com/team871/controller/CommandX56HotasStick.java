@@ -63,6 +63,11 @@ public class CommandX56HotasStick {
         return hid.getRawAxis(THUMB_STICK_Y_AXIS);
     }
 
+    public Trigger trigger() {
+        return new Trigger(CommandScheduler.getInstance().getDefaultButtonLoop(),
+                () -> hid.getRawButton(TRIGGER));
+    }
+
     public Trigger a() {
         return new Trigger(CommandScheduler.getInstance().getDefaultButtonLoop(),
                 () -> hid.getRawButton(A));

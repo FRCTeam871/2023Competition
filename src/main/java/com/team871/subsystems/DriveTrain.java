@@ -86,7 +86,7 @@ public class DriveTrain extends SubsystemBase {
     double controllerOutputB = 0.015;
     double controllerOutputC = (1-controllerOutputB)/(contollerOutputA-1);
     double wrappedControllerOutput =
-        controllerOutputC* Math.pow(contollerOutputA, Math.abs(controllerOutput)) + controllerOutputB * Math.abs(controllerOutput) - controllerOutputC;
+        controllerOutputC * Math.pow(contollerOutputA, Math.abs(controllerOutput)) + controllerOutputB * Math.abs(controllerOutput) - controllerOutputC;
     if (controllerOutput >= 0) {
       return wrappedControllerOutput;
     } else {

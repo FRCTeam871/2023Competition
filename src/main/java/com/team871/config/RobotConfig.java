@@ -270,7 +270,7 @@ public class RobotConfig implements IRobot {
   }
 
   @Override
-  public double getFoldOutShouderSetpoint() {
+  public double getFoldOutShoulderSetpoint() {
     return foldOutShoulderSetpoint;
   }
 

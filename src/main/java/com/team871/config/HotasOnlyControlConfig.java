@@ -106,4 +106,9 @@ public class HotasOnlyControlConfig implements IControlConfig {
     public Trigger getHomeExtensionTrigger() {
         return systemController.getToggleUp(1);
     }
+
+    @Override
+    public Trigger getManualControl() {
+        return systemController.getToggleDown(1);
+    }
 }

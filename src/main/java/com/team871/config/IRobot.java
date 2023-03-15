@@ -1,9 +1,8 @@
 package com.team871.config;
 
-import java.util.function.BooleanSupplier;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import java.util.function.BooleanSupplier;
 
 public interface IRobot {
   /**

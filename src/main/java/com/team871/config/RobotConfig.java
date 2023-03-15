@@ -1,7 +1,5 @@
 package com.team871.config;
 
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -10,6 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import java.util.function.BooleanSupplier;
 
 public class RobotConfig implements IRobot {
   private final CANSparkMax frontLeft;
@@ -41,24 +40,23 @@ public class RobotConfig implements IRobot {
   /** formerly 16.2 */
   private static final double middleShoulderSetpoint = 13.2;
   /** formerly 62 */
-  private static final double bottomShoulderSetpoint = 62;
+  private static final double bottomShoulderSetpoint = 55;
 
   private static final double topExtensionSetpoint = 16;
   private static final double middleExtensionSetpoint = 0;
   private static final double bottomExtensionSetpoint = 6.274;
   private static final double pickupExtensionSetpoint = 15;
 
-
   private static final double restOnFrameSetpoint = 62;
 
-  private static final double foldOutShoulderSetpoint = 62;
-  private static final double foldOutExtensionSetpoint = 8;
+  private static final double foldOutShoulderSetpoint = 55;
+  private static final double foldOutExtensionSetpoint = 14;
 
   private static final double foldInShoulderSetpoint = 90;
-  private static final double foldInExtensionSetpoint = 4;
+  private static final double foldInExtensionSetpoint = 1;
 
   private static final double lowClamp = -1;
-  private static final double highClamp = .05;
+  private static final double highClamp = .1;
 
   public RobotConfig() {
     /* sets front left motor to CanSparkMax motor controller with device id 1 */
@@ -280,7 +278,7 @@ public class RobotConfig implements IRobot {
   }
 
   public BooleanSupplier getIsExtensionRetracted() {
-    return () -> armExtensionMotor.isRevLimitSwitchClosed()==1;
+    return () -> armExtensionMotor.isRevLimitSwitchClosed() == 1;
   }
 
   @Override

@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -85,7 +86,7 @@ public class RobotContainer {
      * 90 is fully up, 0 is parallel to the ground, -90 is fully down. Down is
      * positive motor output
      */
-    wrist = new PitchSubsystem(config.getWristMotor(), wristPitchEncoder, 0.048, 0, 0, -1, 1, "Wrist", 0, 0);
+    wrist = new PitchSubsystem(config.getWristMotor(), wristPitchEncoder, 0.7, 0, 0, -1, 1, "Wrist", 0, 0);
     claw = new Claw(config.getClawMotor());
     intake = new Intake(config.getLeftIntakeMotor(), config.getRightIntakeMotor());
 
@@ -166,13 +167,14 @@ public class RobotContainer {
   }
 
   private void configureShoulderBindings() {
-    controlConfig.getHighNodeTrigger()
-            .toggleOnTrue(shoulder.run("HighNode",
-        () -> {
-          final double targetPosition = config.getTopShoulderSetpoint();
-          final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
-          shoulder.setSetpoint(targetPosition + offsetValue);
-        }));
+    shoulder.setSetpoint(90);
+
+    controlConfig.getHighNodeTrigger().toggleOnTrue(shoulder.run("HighNode",
+      () -> {
+        final double targetPosition = config.getTopShoulderSetpoint();
+        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
+        shoulder.setSetpoint(targetPosition + offsetValue);
+      }));
 
     controlConfig.getMiddleNodeTrigger()
         .toggleOnTrue(shoulder.run("MiddleNode",
@@ -200,12 +202,17 @@ public class RobotContainer {
   }
 
   private void configureArmExtensionBindings() {
-    // armExtension.setDefaultCommand(armExtension.run("joystickSetpoint", () -> {
-    //   double joystickSetpoint = (-controlConfig.getExtensionAxisValue() + 1) * (19.0 / 2);
-    //   armExtension.setSetpoint(joystickSetpoint);
-    // }));
+    armExtension.setSetpoint(1);
+    controlConfig.getManualControl().onTrue(
+            armExtension.run("joystickSetpoint", () -> {
+      double joystickSetpoint = (-controlConfig.getExtensionAxisValue() + 1) * (19.0 / 2);
+      armExtension.setSetpoint(joystickSetpoint);
+    }));
 
-    controlConfig.getHomeExtensionTrigger().onTrue(armExtension.homeExtensionCommand(config.getIsExtensionRetracted()));
+    controlConfig.getHomeExtensionTrigger().onTrue(
+            armExtension.homeExtensionCommand(config.getIsExtensionRetracted())
+                    .andThen(() -> armExtension.setSetpoint(1)
+    ));
 
     controlConfig.getHighNodeTrigger()
         .toggleOnTrue(armExtension.run(

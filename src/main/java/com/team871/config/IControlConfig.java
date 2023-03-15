@@ -2,43 +2,43 @@ package com.team871.config;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-/**
- * This interface contains the mappings between various buttons and axes to their functions.
- */
+/** This interface contains the mappings between various buttons and axes to their functions. */
 public interface IControlConfig {
-    double getClawAxisValue();
+  double getClawAxisValue();
 
-    double getWristAxisValue();
+  double getWristAxisValue();
 
-    double getShoulderAxisValue();
+  double getShoulderAxisValue();
 
-    double getExtensionAxisValue();
+  double getExtensionAxisValue();
 
-    double getDriveXAxisValue();
+  double getDriveXAxisValue();
 
-    double getDriveYAxisValue();
+  double getDriveYAxisValue();
 
-    double getDriveRotationAxisValue();
+  double getDriveRotationAxisValue();
 
-    Trigger getHighNodeTrigger();
+  Trigger getHighNodeTrigger();
 
-    Trigger getMiddleNodeTrigger();
+  Trigger getMiddleNodeTrigger();
 
-    Trigger getBottomNodeTrigger();
+  Trigger getBottomNodeTrigger();
 
-    Trigger getPickupTrigger();
+  Trigger getPickupTrigger();
 
-    Trigger getIntakeTrigger();
+  Trigger getIntakeTrigger();
 
-    Trigger getExhaustTrigger();
+  Trigger getExhaustTrigger();
 
-    Trigger getBalanceTrigger();
+  Trigger getBalanceTrigger();
 
-    Trigger getResetGyroTrigger();
+  Trigger getResetGyroTrigger();
 
-    Trigger getFoldOutTrigger();
+  Trigger getFoldOutTrigger();
 
-    Trigger getFoldInTrigger();
+  Trigger getFoldInTrigger();
 
-    Trigger getHomeExtensionTrigger();
+  Trigger getHomeExtensionTrigger();
+
+  Trigger getManualControl();
 }

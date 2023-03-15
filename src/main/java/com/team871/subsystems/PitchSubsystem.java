@@ -48,7 +48,7 @@ public class PitchSubsystem extends PIDSubsystem {
     this.pitchEncoder = pitchEncoder;
     this.lowClamp = lowClamp;
     this.highClamp = highClamp;
-    this.armFeedforward = new ArmFeedforward(0, kg , kv);
+    this.armFeedforward = new ArmFeedforward(0, kg, kv);
     getController().setTolerance(10);
     SmartDashboard.putData(subsystemName + "-PitchPID", getController());
     SmartDashboard.putData(subsystemName + "-PitchEncoder", pitchEncoder);
@@ -70,11 +70,13 @@ public class PitchSubsystem extends PIDSubsystem {
   public void movePitchFeedForward(final double output) {
     double currentTime = Timer.getFPGATimestamp();
     double currentPosition = pitchEncoder.getPitch();
-    double velocityDegPerS = (currentPosition-lastPosition)/(currentTime-lastTime);
+    double velocityDegPerS = (currentPosition - lastPosition) / (currentTime - lastTime);
 
     // TODO: We are doing this completely wrong.  These parameters are the setpoints, not the current state of the system
-    double outputFeedForward = armFeedforward.calculate(Math.toRadians(pitchEncoder.getPitch()), Math.toRadians(velocityDegPerS));
-    double clampedOutput = output + outputFeedForward;
+    double outputFeedForward =
+        armFeedforward.calculate(
+            Math.toRadians(pitchEncoder.getPitch()), Math.toRadians(velocityDegPerS));
+    double clampedOutput = MathUtil.clamp(output + outputFeedForward, lowClamp * 12, highClamp * 12);
     if (motorsEnabled) {
       motor.setVoltage(clampedOutput);
     } else {

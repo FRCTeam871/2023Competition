@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import java.util.function.DoubleSupplier;
 
 public class DriveTrain extends SubsystemBase {
@@ -70,23 +69,28 @@ public class DriveTrain extends SubsystemBase {
     }
   }
 
-  public CommandBase driveMechanumCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rotationSupplier) {
+  public CommandBase driveMechanumCommand(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rotationSupplier) {
     final CommandBase defaultCommand =
-        run(() -> driveMecanum(
-                exponentialDrive(xSupplier.getAsDouble()),
-                exponentialDrive(ySupplier.getAsDouble()),
-                exponentialDrive(rotationSupplier.getAsDouble())));
+        run(
+            () ->
+                driveMecanum(
+                    exponentialDrive(xSupplier.getAsDouble()),
+                    exponentialDrive(ySupplier.getAsDouble()),
+                    exponentialDrive(rotationSupplier.getAsDouble())));
 
     defaultCommand.setName("DriveMechanumCommand");
     return defaultCommand;
   }
 
   public double exponentialDrive(double controllerOutput) {
-    double contollerOutputA = 10;
+    double contollerOutputA = 30;
     double controllerOutputB = 0.015;
-    double controllerOutputC = (1-controllerOutputB)/(contollerOutputA-1);
+    double controllerOutputC = (1 - controllerOutputB) / (contollerOutputA - 1);
     double wrappedControllerOutput =
-        controllerOutputC * Math.pow(contollerOutputA, Math.abs(controllerOutput)) + controllerOutputB * Math.abs(controllerOutput) - controllerOutputC;
+        controllerOutputC * Math.pow(contollerOutputA, Math.abs(controllerOutput))
+            + controllerOutputB * Math.abs(controllerOutput)
+            - controllerOutputC;
     if (controllerOutput >= 0) {
       return wrappedControllerOutput;
     } else {

@@ -21,6 +21,8 @@ public class PitchSubsystem extends PIDSubsystem {
   private final ArmFeedforward armFeedforward;
   private double lastPosition;
   private double lastTime;
+  private double minSetpoint;
+  private double maxSetpoint;
 
   public void setMotorsEnabled(boolean motorsEnabled) {
     this.motorsEnabled = motorsEnabled;
@@ -40,8 +42,12 @@ public class PitchSubsystem extends PIDSubsystem {
       final double highClamp,
       final String subsystemName,
       double kg,
-      double kv) {
+      double kv,
+      double minSetpoint,
+      double maxSetpoint) {
     super(new PIDController(kp, ki, kd));
+    this.minSetpoint = minSetpoint;
+    this.maxSetpoint = maxSetpoint;
     setName(subsystemName);
 
     this.motor = motor;
@@ -49,23 +55,12 @@ public class PitchSubsystem extends PIDSubsystem {
     this.lowClamp = lowClamp;
     this.highClamp = highClamp;
     this.armFeedforward = new ArmFeedforward(0, kg, kv);
-    getController().setTolerance(10);
+    getController().setTolerance(4);
     
     SmartDashboard.putData(subsystemName + "-PitchPID", getController());
     SmartDashboard.putData(subsystemName + "-PitchEncoder", pitchEncoder);
     SmartDashboard.putData(subsystemName + "-DisableMotorsCommand", disableMotors());
     SmartDashboard.putData(subsystemName + "-EnableMotorsCommand", enableMotors());
-  }
-
-  public void movePitch(final double output) {
-    double clampedOutput = MathUtil.clamp(output, lowClamp, highClamp);
-    if (motorsEnabled) {
-      motor.set(clampedOutput);
-    } else {
-      motor.set(0);
-    }
-    SmartDashboard.putNumber(getName() + "-motorOutput", clampedOutput);
-    SmartDashboard.putNumber(getName() + "-rawMotorOutput", output);
   }
 
   public void movePitchFeedForward(final double output) {
@@ -83,12 +78,13 @@ public class PitchSubsystem extends PIDSubsystem {
     } else {
       motor.setVoltage(0);
     }
+
     lastTime = currentTime;
     lastPosition = currentPosition;
-    SmartDashboard.putNumber(getName() + "-motorOutput", clampedOutput);
+    SmartDashboard.putNumber(getName() + "-actualMotorOutput", clampedOutput);
     SmartDashboard.putNumber(getName() + "-rawMotorOutput", output);
-    SmartDashboard.putNumber(getName() + "velocityDegreesPerSec", velocityDegPerS);
-    SmartDashboard.putNumber(getName() + "feedForward", outputFeedForward);
+    SmartDashboard.putNumber(getName() + "-velocityDegreesPerSec", velocityDegPerS);
+    SmartDashboard.putNumber(getName() + "-feedForward", outputFeedForward);
   }
 
   @Override
@@ -117,6 +113,15 @@ public class PitchSubsystem extends PIDSubsystem {
   @Override
   protected double getMeasurement() {
     return pitchEncoder.getPitch();
+  }
+
+  public double getPosition() {
+    return pitchEncoder.getPitch();
+  }
+
+  @Override
+  public void setSetpoint(double setpoint) {
+    super.setSetpoint(Math.min(maxSetpoint, Math.max(minSetpoint, setpoint)));
   }
 
   public Command run(String name, Runnable action) {

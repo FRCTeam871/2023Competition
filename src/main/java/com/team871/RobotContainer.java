@@ -7,9 +7,7 @@ package com.team871;
 
 import com.team871.config.*;
 import com.team871.dashboard.DriveTrainExtensions;
-import com.team871.simulation.SimulationDistanceEncoder;
 import com.team871.simulation.SimulationGyro;
-import com.team871.simulation.SimulationPitchEncoder;
 import com.team871.subsystems.ArmExtension;
 import com.team871.subsystems.Claw;
 import com.team871.subsystems.DriveTrain;
@@ -18,12 +16,13 @@ import com.team871.subsystems.PitchSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -46,7 +45,11 @@ public class RobotContainer {
   private final Intake intake;
   private final IRobot config;
   private final IGyro gyro;
-  private SequentialCommandGroup homeExtensionCommand;
+  private Command homeExtensionCommand;
+  private Command foldInCommand;
+  private Command bottomCommand;
+  private Command middleCommand;
+  private Command topCommand;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -64,35 +67,45 @@ public class RobotContainer {
         config.getRearRightMotor(),
         gyro);
 
-    final PitchEncoder shoulderPitchEncoder = RobotBase.isSimulation() ? new SimulationPitchEncoder()
-        : config.getShoulderPitchEncoder();
+    final PitchEncoder shoulderPitchEncoder = config.getShoulderPitchEncoder();
 
     // -90 is fully up, 0 is parallel to the ground, 90 is fully down. Down is
     // negative motor output
-    shoulder = new PitchSubsystem(
-        config.getShoulderMotor(),
-        shoulderPitchEncoder,
-        0.11,
-        0,
-        0,
-        config.getShoulderLowClampValue(),
-        config.getShoulderHighClampValue(),
-        "Shoulder",
-        -1.5,
-        1);
+    shoulder = new PitchSubsystem(config.getShoulderMotor(),
+            shoulderPitchEncoder,
+            0.11,
+            0,
+            0,
+            config.getShoulderLowClampValue(),
+            config.getShoulderHighClampValue(),
+            "Shoulder",
+            -1.5,
+            1,
+            -15,
+            90);
 
-    final PitchEncoder wristPitchEncoder = RobotBase.isSimulation() ? new SimulationPitchEncoder()
-        : config.getWristPitchEncoder();
+    final PitchEncoder wristPitchEncoder = config.getWristPitchEncoder();
 
-    /**
+    /*
      * 90 is fully up, 0 is parallel to the ground, -90 is fully down. Down is
      * positive motor output
      */
-    wrist = new PitchSubsystem(config.getWristMotor(), wristPitchEncoder, 0.7, 0, 0, -1, 1, "Wrist", 0, 0);
+    wrist = new PitchSubsystem(config.getWristMotor(),
+            wristPitchEncoder,
+            0.7,
+            0,
+            0,
+            -1,
+            1,
+            "Wrist",
+            0,
+            0,
+            -90,
+            90);
     claw = new Claw(config.getClawMotor());
     intake = new Intake(config.getLeftIntakeMotor(), config.getRightIntakeMotor());
 
-    final DistanceEncoder extensionEncoder = RobotBase.isSimulation() ? new SimulationDistanceEncoder() : config.getExtensionEncoder();
+    final DistanceEncoder extensionEncoder = config.getExtensionEncoder();
     armExtension = new ArmExtension(config.getArmExtensionMotor(), extensionEncoder);
 
     SmartDashboard.putData("DriveTrain", drivetrain);
@@ -114,10 +127,6 @@ public class RobotContainer {
     // plugged in"
     // flooding in console
     DriverStation.silenceJoystickConnectionWarning(true);
-
-    if(!armExtension.isHomed()) {
-      //homeExtensionCommand.schedule();
-    }
   }
 
   /**
@@ -135,31 +144,143 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    System.out.println("configure bindings");
-
-    configureDrivetrainControllerBindings();
-    configureShoulderBindings();
     configureClawBindings();
     configureWristBindings();
     configureIntakeBindings();
-    configureArmExtensionBindings();
-    configureCompositeCommands();
+    configureDrivetrainBindings();
+    configureExtensionBindings();
+
+    defineCommands();
+    bindCommands();
   }
 
   private void configureClawBindings() {
     claw.setDefaultCommand(controlConfig::getClawAxisValue);
   }
 
-  public void configureCompositeCommands() {
-    controlConfig.getFoldInTrigger()
-        .onTrue(armExtension.run(() -> armExtension.setSetpoint(config.getFoldInExtensionSetpoint()))
-            .until(armExtension::isAtSetpoint)
-            .andThen(shoulder.runOnce(() -> shoulder.setSetpoint(config.getFoldInShoulderSetpoint()))));
+  /**
+   * Define the commands as instances so that we can refer to them when we need to.  Commands in the Command Based
+   * architecture are not ephemeral objects, and should be retained and reused.
+   */
+  private void defineCommands() {
+    // Fold the arm in.  Note that we don't let the operator trim the extension here,  there's no need to
+    // and it's unsafe.
+    foldInCommand = Commands.run(() -> {
+      armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
 
-    controlConfig.getFoldOutTrigger()
-        .onTrue(shoulder.run(() -> shoulder.setSetpoint(config.getFoldOutShoulderSetpoint()))
-            .until(shoulder::isAtSetpoint)
-            .andThen(() -> armExtension.setSetpoint(config.getFoldOutExtensionSetpoint())));
+      // If the extension is safe, we can move the shoulder all the way in
+      // otherwise, go as low as we can until we get there
+      if (armExtension.isAtSetpoint()) {
+        shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
+      } else {
+        shoulder.setSetpoint(config.getBottomShoulderSetpoint());
+      }
+    }, armExtension, shoulder)
+    .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
+    .andThen(applyTrimCommand(config.getFoldInShoulderSetpoint(),
+            () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
+            shoulder::setSetpoint, shoulder));
+
+    bottomCommand = Commands.run(() -> {
+      shoulder.setSetpoint(config.getBottomShoulderSetpoint());
+
+      // If the shoulder is poked out, it's safe to extend out
+      // Otherwise pull the extension all the way in because that's safe
+      if (shoulder.isAtSetpoint()) {
+        armExtension.setSetpoint(config.getBottomExtensionSetpoint());
+      } else {
+        armExtension.setSetpoint(1);
+      }
+    }, armExtension, shoulder)
+    .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
+    .andThen(applyTrimCommand(config.getBottomShoulderSetpoint(),
+            () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
+            shoulder::setSetpoint, shoulder))
+    .alongWith(applyTrimCommand(config.getBottomExtensionSetpoint(),
+            () -> controlConfig.getExtensionAxisValue() * config.getMaxExtensionTrimOffset(),
+            armExtension::setSetpoint, armExtension));
+
+    middleCommand = Commands.run(() -> {
+      shoulder.setSetpoint(config.getMiddleExtensionSetpoint());
+
+      // If the shoulder is poked out, it's safe to extend out
+      // Otherwise pull the extension all the way in because that's safe
+      if (shoulder.getPosition() < config.getBottomExtensionSetpoint()) {
+        armExtension.setSetpoint(config.getMiddleExtensionSetpoint());
+      } else {
+        armExtension.setSetpoint(1);
+      }
+    }, armExtension, shoulder)
+    .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
+    .andThen(applyTrimCommand(config.getMiddleShoulderSetpoint(),
+            () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
+            shoulder::setSetpoint, shoulder))
+    .alongWith(applyTrimCommand(config.getMiddleExtensionSetpoint(),
+            () ->  controlConfig.getExtensionAxisValue() * config.getMaxExtensionTrimOffset(),
+            armExtension::setSetpoint, armExtension));
+
+    topCommand = Commands.run(() -> {
+      shoulder.setSetpoint(config.getTopShoulderSetpoint());
+
+      // If the shoulder is poked out, it's safe to extend out
+      // Otherwise pull the extension all the way in because that's safe
+      if (shoulder.getPosition() < config.getBottomShoulderSetpoint()) {
+        armExtension.setSetpoint(config.getTopExtensionSetpoint());
+      } else {
+        armExtension.setSetpoint(1);
+      }
+    }, armExtension, shoulder)
+    .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
+    .andThen(applyTrimCommand(config.getTopShoulderSetpoint(),
+            () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
+            shoulder::setSetpoint, shoulder))
+    .alongWith(applyTrimCommand(config.getTopExtensionSetpoint(),
+            () ->  controlConfig.getExtensionAxisValue() * config.getMaxExtensionTrimOffset(),
+            armExtension::setSetpoint, armExtension));
+
+    homeExtensionCommand = armExtension.homeExtensionCommand(config.getIsExtensionRetracted())
+            .andThen(() -> armExtension.setSetpoint(1));
+  }
+
+  /**
+   * Bind all the commands configured above to triggers.
+   */
+  private void bindCommands() {
+    controlConfig.getFoldInTrigger().onTrue(foldInCommand);
+    controlConfig.getBottomNodeTrigger().onTrue(bottomCommand);
+    controlConfig.getMiddleNodeTrigger().onTrue(middleCommand);
+    controlConfig.getHighNodeTrigger().onTrue(topCommand);
+    controlConfig.getHomeExtensionTrigger().onTrue(homeExtensionCommand);
+  }
+
+  /**
+   * Run a command to apply trim to a subsystem.  Reset the setpoint to the desired before the command is
+   * canceled to prevent unexpected exciting and surprising behavior and generally preventing
+   * Rapid Unscheduled Disassembly
+   */
+  private Command applyTrimCommand(final double actualSetpoint,
+                                   DoubleSupplier trimSupplier,
+                                   DoubleConsumer setpointConsumer,
+                                   Subsystem subsystem) {
+    return Commands.runEnd(
+            () -> setpointConsumer.accept(actualSetpoint + trimSupplier.getAsDouble()),
+            () -> setpointConsumer.accept(actualSetpoint),
+            subsystem);
+  }
+
+  private void configureExtensionBindings() {
+    controlConfig.getManualControl().onTrue(armExtension.run("ManualControl",
+      () -> {
+        double setPoint = controlConfig.getExtensionAxisValue() * 19.0d;
+
+        // Don't let an operator smash the extension into the frame.
+        if(shoulder.getPosition() < config.getBottomShoulderSetpoint() ||
+           shoulder.getSetpoint() < config.getBottomShoulderSetpoint()) {
+          setPoint = 1;
+        }
+
+        armExtension.setSetpoint(setPoint);
+      }));
   }
 
   private void configureWristBindings() {
@@ -167,78 +288,9 @@ public class RobotContainer {
         wrist.run("FollowShoulder",
             () -> {
               final double targetPosition = config.getShoulderPitchEncoder().getPitch();
-              final double offsetValue = controlConfig.getWristAxisValue() * config.getMaxOffsetWristValue();
+              final double offsetValue = controlConfig.getWristAxisValue() * config.getMaxWristTrimOffset();
               wrist.setSetpoint((targetPosition * -1) + offsetValue);
             }));
-  }
-
-  private void configureShoulderBindings() {
-    shoulder.setSetpoint(config.getBottomShoulderSetpoint());
-
-    controlConfig.getHighNodeTrigger().toggleOnTrue(shoulder.run("HighNode",
-      () -> {
-        final double targetPosition = config.getTopShoulderSetpoint();
-        final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
-        shoulder.setSetpoint(targetPosition + offsetValue);
-      }));
-
-    controlConfig.getMiddleNodeTrigger()
-        .toggleOnTrue(shoulder.run("MiddleNode",
-                () -> {
-                  final double targetPosition = config.getMiddleShoulderSetpoint();
-                  final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
-                  shoulder.setSetpoint(targetPosition + offsetValue);
-                }));
-
-    controlConfig.getBottomNodeTrigger()
-        .toggleOnTrue(shoulder.run("Bottom",
-                () -> {
-                  final double targetPosition = config.getBottomShoulderSetpoint();
-                  final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
-                  shoulder.setSetpoint(targetPosition + offsetValue);
-                }));
-
-    controlConfig.getPickupTrigger()
-        .toggleOnTrue(shoulder.run("Pickup",
-                () -> {
-                  final double targetPosition = config.getBottomShoulderSetpoint();
-                  final double offsetValue = controlConfig.getShoulderAxisValue() * config.getMaxOffsetShoulderValue();
-                  shoulder.setSetpoint(targetPosition + offsetValue);
-                }));
-  }
-
-  private void configureArmExtensionBindings() {
-    armExtension.setSetpoint(1);
-    controlConfig.getManualControl().onTrue(
-            armExtension.run("joystickSetpoint", () -> {
-      double joystickSetpoint = (-controlConfig.getExtensionAxisValue() + 1) * (19.0 / 2);
-      armExtension.setSetpoint(joystickSetpoint);
-    }));
-
-//    homeExtensionCommand = shoulder.runOnce(() -> shoulder.setSetpoint(config.getBottomShoulderSetpoint()))
-//            .andThen(armExtension.homeExtensionCommand(config.getIsExtensionRetracted()))
-//            .andThen(() -> armExtension.setSetpoint(1));
-
-    homeExtensionCommand = armExtension.homeExtensionCommand(config.getIsExtensionRetracted())
-            .andThen(() -> armExtension.setSetpoint(1));
-
-    controlConfig.getHomeExtensionTrigger().onTrue(homeExtensionCommand);
-
-    controlConfig.getHighNodeTrigger()
-        .toggleOnTrue(armExtension.run(
-                "TopNode", () -> armExtension.setSetpoint(config.getTopExtensionSetpoint())));
-
-    controlConfig.getMiddleNodeTrigger()
-        .toggleOnTrue(armExtension.run(
-                "MiddleNode",  () -> armExtension.setSetpoint(config.getMiddleExtensionSetpoint())));
-
-    controlConfig.getBottomNodeTrigger()
-        .toggleOnTrue(armExtension.run(
-                "BottomNode", ()-> armExtension.setSetpoint(config.getBottomExtensionSetpoint())));
-
-    controlConfig.getPickupTrigger()
-        .toggleOnTrue(armExtension.run(
-                "Pickup", () -> armExtension.setSetpoint(config.getPickupExtensionSetpoint())));
   }
 
   private void configureIntakeBindings() {
@@ -246,7 +298,7 @@ public class RobotContainer {
     controlConfig.getExhaustTrigger().whileTrue(intake.run(intake::pullOut));
   }
 
-  private void configureDrivetrainControllerBindings() {
+  private void configureDrivetrainBindings() {
     drivetrain.setDefaultCommand(
         drivetrain.driveMechanumCommand(
             controlConfig::getDriveXAxisValue,
@@ -263,5 +315,10 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return armExtension.homeExtensionCommand(config.getIsExtensionRetracted());
+  }
+
+  // We should always home our extension first.
+  public Command getTeleopInitCommand() {
+    return homeExtensionCommand;
   }
 }

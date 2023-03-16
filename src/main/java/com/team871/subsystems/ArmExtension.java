@@ -88,6 +88,12 @@ public class ArmExtension extends PIDSubsystem {
     return atSetpoint;
   }
 
+  @Override
+  public void setSetpoint(double setpoint) {
+    // Explicitly don't let us go past 0, or beyond 18
+    super.setSetpoint(Math.min(18, Math.max(0, setpoint)));
+  }
+
   public boolean isHomed() {
     return isHomed;
   }

@@ -48,12 +48,12 @@
           "visible": true
         }
       },
-      "/SmartDashboard/Shoulder-PitchPID": {
+      "/SmartDashboard/Shoulder": {
         "window": {
           "visible": true
         }
       },
-      "/SmartDashboard/extensionCommand": {
+      "/SmartDashboard/Shoulder-PitchPID": {
         "window": {
           "visible": true
         }
@@ -73,6 +73,12 @@
           "open": true
         },
         "Shoulder-PitchPID": {
+          "open": true
+        },
+        "extensionEncoder": {
+          "open": true
+        },
+        "extensionPID": {
           "open": true
         },
         "open": true

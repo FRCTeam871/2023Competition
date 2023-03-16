@@ -2,6 +2,7 @@ package com.team871.config;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import java.util.function.BooleanSupplier;
 
 public interface IRobot {
   /**
@@ -65,9 +66,21 @@ public interface IRobot {
 
   double getBottomExtensionSetpoint();
 
+  double getPickupExtensionSetpoint();
+
   double getRestOnFrameSetpoint();
 
   double getShoulderLowClampValue();
 
   double getShoulderHighClampValue();
+
+  double getFoldInShoulderSetpoint();
+
+  double getFoldInExtensionSetpoint();
+
+  double getFoldOutShoulderSetpoint();
+
+  double getFoldOutExtensionSetpoint();
+
+  BooleanSupplier getIsExtensionRetracted();
 }

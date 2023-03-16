@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import java.util.function.BooleanSupplier;
 
 public class RobotConfig implements IRobot {
   private final CANSparkMax frontLeft;
@@ -39,15 +40,23 @@ public class RobotConfig implements IRobot {
   /** formerly 16.2 */
   private static final double middleShoulderSetpoint = 13.2;
   /** formerly 62 */
-  private static final double bottomShoulderSetpoint = 62;
+  private static final double bottomShoulderSetpoint = 58;
 
-  private static final double topExtensionSetpoint = 19;
+  private static final double topExtensionSetpoint = 18;
   private static final double middleExtensionSetpoint = 0;
-  private static final double bottomExtensionSetpoint = 1.274;
+  private static final double bottomExtensionSetpoint = 15;
+  private static final double pickupExtensionSetpoint = 15;
+
   private static final double restOnFrameSetpoint = 62;
 
+  private static final double foldOutShoulderSetpoint = 55;
+  private static final double foldOutExtensionSetpoint = 14;
+
+  private static final double foldInShoulderSetpoint = 90;
+  private static final double foldInExtensionSetpoint = 0;
+
   private static final double lowClamp = -1;
-  private static final double highClamp = .05;
+  private static final double highClamp = .1;
 
   public RobotConfig() {
     /* sets front left motor to CanSparkMax motor controller with device id 1 */
@@ -73,6 +82,7 @@ public class RobotConfig implements IRobot {
     shoulderMotor = new CANSparkMax(5, CANSparkMaxLowLevel.MotorType.kBrushless);
     shoulderMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     shoulderMotor.setInverted(true);
+
     /** TODO set limit switches */
     leftIntakeMotor = new CANSparkMax(6, CANSparkMaxLowLevel.MotorType.kBrushless);
     leftIntakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -85,6 +95,8 @@ public class RobotConfig implements IRobot {
     wristMotor = new WPI_TalonSRX(10);
     wristMotor.setNeutralMode(NeutralMode.Brake);
     wristMotor.setInverted(true);
+    wristMotor.configPeakCurrentLimit(15);
+    wristMotor.configPeakCurrentDuration(250);
 
     clawMotor = new WPI_TalonSRX(9);
     clawMotor.setNeutralMode(NeutralMode.Brake);
@@ -97,6 +109,8 @@ public class RobotConfig implements IRobot {
     armExtensionMotor.configReverseLimitSwitchSource(
         LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
     armExtensionMotor.configClearPositionOnLimitR(true, 0);
+    armExtensionMotor.configPeakCurrentLimit(20);
+    armExtensionMotor.configPeakCurrentDuration(250);
 
     balancePID = new PIDController(0.03, 0.0, 0.0001);
 
@@ -241,5 +255,34 @@ public class RobotConfig implements IRobot {
   @Override
   public double getRestOnFrameSetpoint() {
     return restOnFrameSetpoint;
+  }
+
+  @Override
+  public double getFoldInShoulderSetpoint() {
+    return foldInShoulderSetpoint;
+  }
+
+  @Override
+  public double getFoldInExtensionSetpoint() {
+    return foldInExtensionSetpoint;
+  }
+
+  @Override
+  public double getFoldOutShoulderSetpoint() {
+    return foldOutShoulderSetpoint;
+  }
+
+  @Override
+  public double getFoldOutExtensionSetpoint() {
+    return foldOutExtensionSetpoint;
+  }
+
+  public BooleanSupplier getIsExtensionRetracted() {
+    return () -> armExtensionMotor.isRevLimitSwitchClosed() == 1;
+  }
+
+  @Override
+  public double getPickupExtensionSetpoint() {
+    return pickupExtensionSetpoint;
   }
 }

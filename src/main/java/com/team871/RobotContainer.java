@@ -56,7 +56,8 @@ public class RobotContainer {
    */
   public RobotContainer() {
     config = new RobotConfig();
-    controlConfig = new XboxHotasControlConfig();
+    controlConfig = new SimulationDualKeyboardControl();
+//    controlConfig = new XboxHotasControlConfig();
     //controlConfig = new HotasOnlyControlConfig();
     gyro = RobotBase.isReal() ? new Gyro() : new SimulationGyro();
 
@@ -179,7 +180,8 @@ public class RobotContainer {
     .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
     .andThen(applyTrimCommand(config.getFoldInShoulderSetpoint(),
             () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
-            shoulder::setSetpoint, shoulder));
+            shoulder::setSetpoint));
+    foldInCommand.setName("FoldIn");
 
     bottomCommand = Commands.run(() -> {
       shoulder.setSetpoint(config.getBottomShoulderSetpoint());
@@ -195,10 +197,11 @@ public class RobotContainer {
     .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
     .andThen(applyTrimCommand(config.getBottomShoulderSetpoint(),
             () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
-            shoulder::setSetpoint, shoulder))
+            shoulder::setSetpoint))
     .alongWith(applyTrimCommand(config.getBottomExtensionSetpoint(),
             () -> controlConfig.getExtensionAxisValue() * config.getMaxExtensionTrimOffset(),
-            armExtension::setSetpoint, armExtension));
+            armExtension::setSetpoint));
+    bottomCommand.setName("Bottom");
 
     middleCommand = Commands.run(() -> {
       shoulder.setSetpoint(config.getMiddleExtensionSetpoint());
@@ -214,16 +217,17 @@ public class RobotContainer {
     .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
     .andThen(applyTrimCommand(config.getMiddleShoulderSetpoint(),
             () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
-            shoulder::setSetpoint, shoulder))
+            shoulder::setSetpoint))
     .alongWith(applyTrimCommand(config.getMiddleExtensionSetpoint(),
             () ->  controlConfig.getExtensionAxisValue() * config.getMaxExtensionTrimOffset(),
-            armExtension::setSetpoint, armExtension));
+            armExtension::setSetpoint));
+    middleCommand.setName("Middle");
 
     topCommand = Commands.run(() -> {
       shoulder.setSetpoint(config.getTopShoulderSetpoint());
 
       // If the shoulder is poked out, it's safe to extend out
-      // Otherwise pull the extension all the way in because that's safe
+      // Otherwise pull the extension all the way in because that'syttuuihgg safe
       if (shoulder.getPosition() < config.getBottomShoulderSetpoint()) {
         armExtension.setSetpoint(config.getTopExtensionSetpoint());
       } else {
@@ -233,13 +237,15 @@ public class RobotContainer {
     .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
     .andThen(applyTrimCommand(config.getTopShoulderSetpoint(),
             () -> controlConfig.getShoulderAxisValue() * config.getMaxShoulderTrimOffset(),
-            shoulder::setSetpoint, shoulder))
+            shoulder::setSetpoint))
     .alongWith(applyTrimCommand(config.getTopExtensionSetpoint(),
             () ->  controlConfig.getExtensionAxisValue() * config.getMaxExtensionTrimOffset(),
-            armExtension::setSetpoint, armExtension));
+            armExtension::setSetpoint));
+    topCommand.setName("Top");
 
     homeExtensionCommand = armExtension.homeExtensionCommand(config.getIsExtensionRetracted())
             .andThen(() -> armExtension.setSetpoint(1));
+    homeExtensionCommand.setName("Home");
   }
 
   /**
@@ -260,12 +266,10 @@ public class RobotContainer {
    */
   private Command applyTrimCommand(final double actualSetpoint,
                                    DoubleSupplier trimSupplier,
-                                   DoubleConsumer setpointConsumer,
-                                   Subsystem subsystem) {
+                                   DoubleConsumer setpointConsumer) {
     return Commands.runEnd(
             () -> setpointConsumer.accept(actualSetpoint + trimSupplier.getAsDouble()),
-            () -> setpointConsumer.accept(actualSetpoint),
-            subsystem);
+            () -> setpointConsumer.accept(actualSetpoint));
   }
 
   private void configureExtensionBindings() {
@@ -289,7 +293,13 @@ public class RobotContainer {
             () -> {
               final double targetPosition = config.getShoulderPitchEncoder().getPitch();
               final double offsetValue = controlConfig.getWristAxisValue() * config.getMaxWristTrimOffset();
-              wrist.setSetpoint((targetPosition * -1) + offsetValue);
+              double setpoint = (targetPosition * -1) + offsetValue;
+
+              if(shoulder.getPosition() > config.getBottomShoulderSetpoint()) {
+                setpoint = Math.min(-90, setpoint);
+              }
+
+              wrist.setSetpoint(setpoint);
             }));
   }
 

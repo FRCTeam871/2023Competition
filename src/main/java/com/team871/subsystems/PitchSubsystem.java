@@ -50,6 +50,7 @@ public class PitchSubsystem extends PIDSubsystem {
     this.highClamp = highClamp;
     this.armFeedforward = new ArmFeedforward(0, kg, kv);
     getController().setTolerance(10);
+    
     SmartDashboard.putData(subsystemName + "-PitchPID", getController());
     SmartDashboard.putData(subsystemName + "-PitchEncoder", pitchEncoder);
     SmartDashboard.putData(subsystemName + "-DisableMotorsCommand", disableMotors());

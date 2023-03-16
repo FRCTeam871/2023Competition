@@ -39,12 +39,12 @@ public class HotasOnlyControlConfig implements IControlConfig {
 
     @Override
     public double getDriveXAxisValue() {
-        return driveController.getStickX();
+        return driveController.getStickY();
     }
 
     @Override
     public double getDriveYAxisValue() {
-        return driveController.getStickY();
+        return driveController.getStickX();
     }
 
     @Override

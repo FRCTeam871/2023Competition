@@ -84,7 +84,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double exponentialDrive(double controllerOutput) {
-    double contollerOutputA = 30;
+    double contollerOutputA = 15;
     double controllerOutputB = 0.015;
     double controllerOutputC = (1 - controllerOutputB) / (contollerOutputA - 1);
     double wrappedControllerOutput =

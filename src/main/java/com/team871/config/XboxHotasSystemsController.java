@@ -5,7 +5,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class XboxHotasControlConfig implements IControlConfig {
+public class XboxHotasSystemsController implements IControlConfig {
 
   private static final double LEFT_X_DEADBAND = .09;
   private static final double LEFT_Y_DEADBAND = .09;
@@ -17,7 +17,7 @@ public class XboxHotasControlConfig implements IControlConfig {
   private final CommandXboxController driveController;
   private final CommandX56HotasThrottle systemController;
 
-  public XboxHotasControlConfig() {
+  public XboxHotasSystemsController() {
     driveController = new CommandXboxController(0);
     systemController = new CommandX56HotasThrottle(1);
   }
@@ -59,12 +59,12 @@ public class XboxHotasControlConfig implements IControlConfig {
 
   @Override
   public Trigger getHighNodeTrigger() {
-    return driveController.y();
+    return systemController.getSw(1);
   }
 
   @Override
   public Trigger getMiddleNodeTrigger() {
-    return driveController.b();
+    return systemController.getSw(3);
   }
 
   @Override
@@ -104,12 +104,12 @@ public class XboxHotasControlConfig implements IControlConfig {
 
   @Override
   public Trigger getFoldOutTrigger() {
-    return driveController.a();
+    return systemController.getSw(2);
   }
 
   @Override
   public Trigger getFoldInTrigger() {
-    return driveController.x();
+    return systemController.getSw(4);
   }
 
   @Override

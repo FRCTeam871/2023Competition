@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -45,14 +46,15 @@ public class RobotContainer {
   private final Intake intake;
   private final IRobot config;
   private final IGyro gyro;
+  private SequentialCommandGroup homeExtensionCommand;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
     config = new RobotConfig();
-    // controlConfig = new XboxHotasControlConfig();
-    controlConfig = new HotasOnlyControlConfig();
+    controlConfig = new XboxHotasControlConfig();
+    //controlConfig = new HotasOnlyControlConfig();
     gyro = RobotBase.isReal() ? new Gyro() : new SimulationGyro();
 
     drivetrain = new DriveTrain(
@@ -70,7 +72,7 @@ public class RobotContainer {
     shoulder = new PitchSubsystem(
         config.getShoulderMotor(),
         shoulderPitchEncoder,
-        0.1,
+        0.11,
         0,
         0,
         config.getShoulderLowClampValue(),
@@ -112,6 +114,10 @@ public class RobotContainer {
     // plugged in"
     // flooding in console
     DriverStation.silenceJoystickConnectionWarning(true);
+
+    if(!armExtension.isHomed()) {
+      //homeExtensionCommand.schedule();
+    }
   }
 
   /**
@@ -167,7 +173,7 @@ public class RobotContainer {
   }
 
   private void configureShoulderBindings() {
-    shoulder.setSetpoint(90);
+    shoulder.setSetpoint(config.getBottomShoulderSetpoint());
 
     controlConfig.getHighNodeTrigger().toggleOnTrue(shoulder.run("HighNode",
       () -> {
@@ -209,10 +215,14 @@ public class RobotContainer {
       armExtension.setSetpoint(joystickSetpoint);
     }));
 
-    controlConfig.getHomeExtensionTrigger().onTrue(
-            armExtension.homeExtensionCommand(config.getIsExtensionRetracted())
-                    .andThen(() -> armExtension.setSetpoint(1)
-    ));
+//    homeExtensionCommand = shoulder.runOnce(() -> shoulder.setSetpoint(config.getBottomShoulderSetpoint()))
+//            .andThen(armExtension.homeExtensionCommand(config.getIsExtensionRetracted()))
+//            .andThen(() -> armExtension.setSetpoint(1));
+
+    homeExtensionCommand = armExtension.homeExtensionCommand(config.getIsExtensionRetracted())
+            .andThen(() -> armExtension.setSetpoint(1));
+
+    controlConfig.getHomeExtensionTrigger().onTrue(homeExtensionCommand);
 
     controlConfig.getHighNodeTrigger()
         .toggleOnTrue(armExtension.run(

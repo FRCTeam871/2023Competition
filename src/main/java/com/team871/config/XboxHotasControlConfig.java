@@ -29,7 +29,7 @@ public class XboxHotasControlConfig implements IControlConfig {
 
   @Override
   public double getWristAxisValue() {
-    return systemController.getFAxis();
+    return -systemController.getRightThrottle();
   }
 
   @Override
@@ -43,6 +43,11 @@ public class XboxHotasControlConfig implements IControlConfig {
     // This normalizes the throttle so that we get a 0 - 1 value where
     // 0 is fully back, and 1 is fully forward
     return (-systemController.getLeftThrottle() + 1.0d)/2.0d;
+  }
+
+  @Override
+  public double getExtensionAxisTrimValue() {
+    return -systemController.getLeftThrottle();
   }
 
   @Override
@@ -72,7 +77,7 @@ public class XboxHotasControlConfig implements IControlConfig {
 
   @Override
   public Trigger getBottomNodeTrigger() {
-    return systemController.getSw(5);
+    return driveController.a();
   }
 
   @Override

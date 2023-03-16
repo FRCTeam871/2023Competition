@@ -41,6 +41,11 @@ public class HotasOnlyControlConfig implements IControlConfig {
     }
 
     @Override
+    public double getExtensionAxisTrimValue() {
+        return 0;
+    }
+
+    @Override
     public double getDriveXAxisValue() {
         return driveController.getStickY();
     }

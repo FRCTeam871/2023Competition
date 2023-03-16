@@ -12,7 +12,7 @@ import java.util.function.DoubleSupplier;
 
 public class ArmExtension extends PIDSubsystem {
 
-  private static final double EXTENSION_PID_KP = 0.45;
+  private static final double EXTENSION_PID_KP = 1;
   private static final double EXTENSION_PID_KI = 0;
   private static final double EXTENSION_PID_KD = 0;
 
@@ -25,7 +25,7 @@ public class ArmExtension extends PIDSubsystem {
     super(new PIDController(EXTENSION_PID_KP, EXTENSION_PID_KI, EXTENSION_PID_KD));
     this.extensionMotor = extensionMotor;
     this.distanceEncoder = distanceEncoder;
-    getController().setTolerance(0.5);
+    getController().setTolerance(0.05);
 
     SmartDashboard.putData("extensionPID", getController());
     SmartDashboard.putData("extensionEncoder", distanceEncoder);
@@ -91,7 +91,7 @@ public class ArmExtension extends PIDSubsystem {
   @Override
   public void setSetpoint(double setpoint) {
     // Explicitly don't let us go past 0, or beyond 18
-    super.setSetpoint(Math.min(18, Math.max(0, setpoint)));
+    super.setSetpoint(Math.min(18.5, Math.max(0, setpoint)));
   }
 
   public boolean isHomed() {

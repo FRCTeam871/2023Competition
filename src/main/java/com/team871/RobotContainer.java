@@ -56,8 +56,8 @@ public class RobotContainer {
    */
   public RobotContainer() {
     config = new RobotConfig();
-    controlConfig = new SimulationDualKeyboardControl();
-//    controlConfig = new XboxHotasControlConfig();
+//    controlConfig = new SimulationDualKeyboardControl();
+    controlConfig = new XboxHotasSystemsController();
     //controlConfig = new HotasOnlyControlConfig();
     gyro = RobotBase.isReal() ? new Gyro() : new SimulationGyro();
 
@@ -295,7 +295,7 @@ public class RobotContainer {
               final double offsetValue = controlConfig.getWristAxisValue() * config.getMaxWristTrimOffset();
               double setpoint = (targetPosition * -1) + offsetValue;
 
-              if(shoulder.getPosition() > config.getBottomShoulderSetpoint()) {
+              if(shoulder.getPosition() > config.getBottomShoulderSetpoint() + 10) {
                 setpoint = Math.min(-90, setpoint);
               }
 
@@ -310,7 +310,7 @@ public class RobotContainer {
 
   private void configureDrivetrainBindings() {
     drivetrain.setDefaultCommand(
-        drivetrain.driveMechanumCommand(
+        drivetrain.driveMechanumCommand(shoulder::getPosition,
             controlConfig::getDriveXAxisValue,
             controlConfig::getDriveYAxisValue,
             controlConfig::getDriveRotationAxisValue));
@@ -329,6 +329,7 @@ public class RobotContainer {
 
   // We should always home our extension first.
   public Command getTeleopInitCommand() {
-    return homeExtensionCommand;
+    return Commands.parallel(Commands.runOnce(() -> shoulder.setSetpoint(config.getBottomShoulderSetpoint())), 
+    Commands.runOnce(() -> wrist.setSetpoint(-90))).andThen(homeExtensionCommand);
   }
 }

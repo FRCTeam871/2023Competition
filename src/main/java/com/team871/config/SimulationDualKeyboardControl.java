@@ -30,6 +30,11 @@ public class SimulationDualKeyboardControl implements IControlConfig {
     }
 
     @Override
+    public double getExtensionAxisTrimValue() {
+        return 0;
+    }
+
+    @Override
     public double getDriveXAxisValue() {
         return 0;
     }

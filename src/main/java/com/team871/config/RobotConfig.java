@@ -54,7 +54,7 @@ public class RobotConfig implements IRobot {
   // endregion
 
   // region Extension constants
-  private static final double EXTENSION_TOP_SETPOINT_INCHES = 18;
+  private static final double EXTENSION_TOP_SETPOINT_INCHES = 18.5;
   private static final double EXTENSION_MIDDLE_SETPOINT_INCHES = 0;
   private static final double EXTENSION_BOTTOM_SETPOINT_INCHES = 15;
   private static final double EXTENSION_FOLDED_SETPOINT_INCHES = 0;

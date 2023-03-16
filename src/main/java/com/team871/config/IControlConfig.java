@@ -12,6 +12,8 @@ public interface IControlConfig {
 
   double getExtensionAxisValue();
 
+  double getExtensionAxisTrimValue();
+
   double getDriveXAxisValue();
 
   double getDriveYAxisValue();

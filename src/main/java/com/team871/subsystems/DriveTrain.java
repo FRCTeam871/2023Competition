@@ -70,14 +70,25 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public CommandBase driveMechanumCommand(
-      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rotationSupplier) {
+     DoubleSupplier shoulderPositionDeg, DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rotationSupplier) {
+    
+      double slope = .013;
+     
     final CommandBase defaultCommand =
-        run(
-            () ->
-                driveMecanum(
-                    exponentialDrive(xSupplier.getAsDouble()),
-                    exponentialDrive(ySupplier.getAsDouble()),
-                    exponentialDrive(rotationSupplier.getAsDouble())));
+        run(() -> {
+            double multiplier = 1;
+              if(shoulderPositionDeg.getAsDouble() < 38.5) {
+                multiplier = slope * (shoulderPositionDeg.getAsDouble()) + .545;
+              }
+
+
+              driveMecanum(
+                    exponentialDrive(xSupplier.getAsDouble() * multiplier),
+                    exponentialDrive(ySupplier.getAsDouble() * multiplier),
+                    exponentialDrive(rotationSupplier.getAsDouble() * multiplier));
+    
+            });
+                
 
     defaultCommand.setName("DriveMechanumCommand");
     return defaultCommand;

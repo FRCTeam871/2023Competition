@@ -50,9 +50,11 @@ public interface IRobot {
 
   PitchEncoder getShoulderPitchEncoder();
 
-  double getMaxOffsetWristValue();
+  double getMaxWristTrimOffset();
 
-  double getMaxOffsetShoulderValue();
+  double getMaxShoulderTrimOffset();
+
+  double getMaxExtensionTrimOffset();
 
   double getTopShoulderSetpoint();
 
@@ -66,10 +68,6 @@ public interface IRobot {
 
   double getBottomExtensionSetpoint();
 
-  double getPickupExtensionSetpoint();
-
-  double getRestOnFrameSetpoint();
-
   double getShoulderLowClampValue();
 
   double getShoulderHighClampValue();
@@ -77,10 +75,6 @@ public interface IRobot {
   double getFoldInShoulderSetpoint();
 
   double getFoldInExtensionSetpoint();
-
-  double getFoldOutShoulderSetpoint();
-
-  double getFoldOutExtensionSetpoint();
 
   BooleanSupplier getIsExtensionRetracted();
 }

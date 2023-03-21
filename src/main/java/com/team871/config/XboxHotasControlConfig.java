@@ -42,7 +42,7 @@ public class XboxHotasControlConfig implements IControlConfig {
     // The throttle is negative when fully forward and positive when fully back.
     // This normalizes the throttle so that we get a 0 - 1 value where
     // 0 is fully back, and 1 is fully forward
-    return (-systemController.getLeftThrottle() + 1.0d)/2.0d;
+    return (-systemController.getLeftThrottle() + 1.0d) / 2.0d;
   }
 
   @Override

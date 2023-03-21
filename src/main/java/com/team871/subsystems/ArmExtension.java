@@ -6,7 +6,6 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -46,7 +45,7 @@ public class ArmExtension extends PIDSubsystem {
    * @param output retract is negative, extend is positive, output between -1 and 1
    */
   public void moveExtension(final double output) {
-   final double limitedOutput = limitOutput(output, distanceEncoder.getDistance());
+    final double limitedOutput = limitOutput(output, distanceEncoder.getDistance());
     extensionMotor.set(limitedOutput);
     SmartDashboard.putNumber("extensionMotorOutput", limitedOutput);
   }
@@ -67,7 +66,7 @@ public class ArmExtension extends PIDSubsystem {
   }
 
   public CommandBase homeExtensionCommand(final BooleanSupplier isAtLimit) {
-   return run(() -> moveExtension(-.5)).until(isAtLimit);
+    return run(() -> moveExtension(-.5)).until(isAtLimit);
   }
 
   @Override
@@ -82,7 +81,7 @@ public class ArmExtension extends PIDSubsystem {
 
   public boolean isAtSetpoint() {
     final boolean atSetpoint = getController().atSetpoint();
-    if(atSetpoint) {
+    if (atSetpoint) {
       isHomed = true;
     }
     return atSetpoint;

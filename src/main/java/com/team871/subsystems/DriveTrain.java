@@ -2,6 +2,7 @@ package com.team871.subsystems;
 
 import com.team871.config.IGyro;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -26,6 +27,7 @@ public class DriveTrain extends SubsystemBase {
   private final IGyro gyro;
   private final PIDController balancePID;
   private final PIDController rotationPID;
+  private NetworkTableEntry limelightTable;
 
   private boolean motorsEnabled = true;
 
@@ -40,6 +42,7 @@ public class DriveTrain extends SubsystemBase {
     this.gyro = gyro;
     this.balancePID = new PIDController(BALANCE_PID_KP, BALANCE_PID_KI, BALANCE_PID_KD);
     this.rotationPID = new PIDController(ROTATION_PID_KP, ROTATION_PID_KI, ROTATION_PID_KD);
+    // limelightTable = NetworkTableInstance.getDefault().getEntry(getName())
 
     SmartDashboard.putData("DisableMotorsCommand", disableMotors());
     SmartDashboard.putData("EnableMotorsCommand", enableMotors());
@@ -70,25 +73,26 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public CommandBase driveMechanumCommand(
-     DoubleSupplier shoulderPositionDeg, DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rotationSupplier) {
-    
-      double slope = .013;
-     
+      DoubleSupplier shoulderPositionDeg,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier rotationSupplier) {
+
+    double slope = .013;
+
     final CommandBase defaultCommand =
-        run(() -> {
-            double multiplier = 1;
-              if(shoulderPositionDeg.getAsDouble() < 38.5) {
+        run(
+            () -> {
+              double multiplier = 1;
+              if (shoulderPositionDeg.getAsDouble() < 38.5) {
                 multiplier = slope * (shoulderPositionDeg.getAsDouble()) + .545;
               }
 
-
               driveMecanum(
-                    exponentialDrive(xSupplier.getAsDouble() * multiplier),
-                    exponentialDrive(ySupplier.getAsDouble() * multiplier),
-                    exponentialDrive(rotationSupplier.getAsDouble() * multiplier));
-    
+                  exponentialDrive(xSupplier.getAsDouble() * multiplier),
+                  exponentialDrive(ySupplier.getAsDouble() * multiplier),
+                  exponentialDrive(rotationSupplier.getAsDouble() * multiplier));
             });
-                
 
     defaultCommand.setName("DriveMechanumCommand");
     return defaultCommand;

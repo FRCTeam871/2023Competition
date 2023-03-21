@@ -37,8 +37,8 @@ public class RobotConfig implements IRobot {
   private static final double SHOULDER_ENCODER_ZERO_VALUE = 1.44;
   private static final double SHOULDER_ENCODER_NEG_90_VALUE = 2.2478;
   private static final double SHOULDER_TOP_SETPOINT_DEG = -12.7;
-  private static final double SHOULDER_MIDDLE_SETPOINT_DEG = 13.2;
-  private static final double SHOULDER_BOTTOM_SETPOINT_DEG = 55;
+  private static final double SHOULDER_MIDDLE_SETPOINT_DEG = 8;
+  private static final double SHOULDER_BOTTOM_SETPOINT_DEG = 48;
   private static final double SHOULDER_FOLDED_SETPOINT_DEG = 90;
 
   // Note that negative values rotate the arm UP and positive are DOWN
@@ -61,7 +61,6 @@ public class RobotConfig implements IRobot {
 
   private static final double EXTENSION_MAXIMUM_TRIM_OFFSET_INCHES = 6;
   // endregion Extension Constants
-
 
   public RobotConfig() {
     /* sets front left motor to CanSparkMax motor controller with device id 1 */
@@ -128,14 +127,26 @@ public class RobotConfig implements IRobot {
 
     gyro = new Gyro();
 
-    extensionEncoder = RobotBase.isSimulation() ? new SimulationDistanceEncoder() : new SRXDistanceEncoder(armExtensionMotor, 0.00007005);
+    extensionEncoder =
+        RobotBase.isSimulation()
+            ? new SimulationDistanceEncoder()
+            : new SRXDistanceEncoder(armExtensionMotor, 0.00007005);
 
     // up 90 degrees is 380 down 90 degrees is 900, original value for degrees per tick was -.3529
     final double wristDegreesPerTick = 180.0d / (380.0d - 900.0d);
-    wristPitchEncoder = RobotBase.isSimulation() ? new SimulationPitchEncoder() : new SRXAnalogEncoderTalonSRX(wristMotor, WRIST_ENCODER_ZERO_VALUE, wristDegreesPerTick);
+    wristPitchEncoder =
+        RobotBase.isSimulation()
+            ? new SimulationPitchEncoder()
+            : new SRXAnalogEncoderTalonSRX(
+                wristMotor, WRIST_ENCODER_ZERO_VALUE, wristDegreesPerTick);
     // down 90 is 1.5 and striaght out (0 degrees) is .68
-    final double shoulderDegreesPerVolt = 90 / (SHOULDER_ENCODER_NEG_90_VALUE - SHOULDER_ENCODER_ZERO_VALUE);
-    shoulderPitchEncoder = RobotBase.isSimulation() ? new SimulationPitchEncoder() : new SparkMaxAnalogEncoder(shoulderMotor, SHOULDER_ENCODER_ZERO_VALUE, shoulderDegreesPerVolt);
+    final double shoulderDegreesPerVolt =
+        90 / (SHOULDER_ENCODER_NEG_90_VALUE - SHOULDER_ENCODER_ZERO_VALUE);
+    shoulderPitchEncoder =
+        RobotBase.isSimulation()
+            ? new SimulationPitchEncoder()
+            : new SparkMaxAnalogEncoder(
+                shoulderMotor, SHOULDER_ENCODER_ZERO_VALUE, shoulderDegreesPerVolt);
   }
 
   @Override

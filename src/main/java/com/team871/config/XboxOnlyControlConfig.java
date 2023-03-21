@@ -28,7 +28,7 @@ public class XboxOnlyControlConfig implements IControlConfig {
 
   @Override
   public double getWristAxisValue() {
-    return MathUtil.applyDeadband(systemController.getRightY(), RIGHT_Y_DEADBAND);
+    return 0;
   }
 
   @Override
@@ -43,7 +43,7 @@ public class XboxOnlyControlConfig implements IControlConfig {
 
   @Override
   public double getExtensionAxisTrimValue() {
-    return 0;
+    return MathUtil.applyDeadband(systemController.getRightY(), RIGHT_Y_DEADBAND);
   }
 
   @Override
@@ -130,6 +130,6 @@ public class XboxOnlyControlConfig implements IControlConfig {
   @Override
   public Trigger getManualControl() {
     // TODO Auto-generated method stub
-    return null;
+    return new Trigger();
   }
 }

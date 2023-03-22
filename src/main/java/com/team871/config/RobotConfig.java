@@ -39,7 +39,7 @@ public class RobotConfig implements IRobot {
   private static final double SHOULDER_TOP_SETPOINT_DEG = -12.7;
   private static final double SHOULDER_MIDDLE_SETPOINT_DEG = 8;
   private static final double SHOULDER_BOTTOM_SETPOINT_DEG = 48;
-  private static final double SHOULDER_FOLDED_SETPOINT_DEG = 90;
+  private static final double SHOULDER_FOLDED_SETPOINT_DEG = 88;
 
   // Note that negative values rotate the arm UP and positive are DOWN
   private static final double SHOULDER_MINIMUM_OUTPUT_PERCENT = -1;

@@ -46,8 +46,9 @@ public class RobotContainer {
   private Command bottomCommand;
   private Command middleCommand;
   private Command topCommand;
+    private SequentialCommandGroup teleopinit;
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+    /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     config = new RobotConfig();
     //    controlConfig = new SimulationDualKeyboardControl();
@@ -267,6 +268,11 @@ public class RobotContainer {
             .homeExtensionCommand(config.getIsExtensionRetracted())
             .andThen(() -> armExtension.setSetpoint(1));
     homeExtensionCommand.setName("Home");
+
+      teleopinit = Commands.parallel(
+                      Commands.runOnce(() -> shoulder.setSetpoint(config.getBottomShoulderSetpoint())),
+                      Commands.runOnce(() -> wrist.setSetpoint(-90)))
+              .andThen(homeExtensionCommand);
   }
 
   /** Bind all the commands configured above to triggers. */
@@ -354,9 +360,6 @@ public class RobotContainer {
 
   // We should always home our extension first.
   public Command getTeleopInitCommand() {
-    return Commands.parallel(
-            Commands.runOnce(() -> shoulder.setSetpoint(config.getBottomShoulderSetpoint())),
-            Commands.runOnce(() -> wrist.setSetpoint(-90)))
-        .andThen(homeExtensionCommand);
+      return teleopinit;
   }
 }

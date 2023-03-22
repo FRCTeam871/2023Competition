@@ -38,7 +38,7 @@ public class RobotConfig implements IRobot {
   private static final double SHOULDER_ENCODER_NEG_90_VALUE = 2.2478;
   private static final double SHOULDER_TOP_SETPOINT_DEG = -12.7;
   private static final double SHOULDER_MIDDLE_SETPOINT_DEG = 8;
-  private static final double SHOULDER_BOTTOM_SETPOINT_DEG = 48;
+  private static final double SHOULDER_BOTTOM_SETPOINT_DEG = 58;
   private static final double SHOULDER_FOLDED_SETPOINT_DEG = 88;
 
   // Note that negative values rotate the arm UP and positive are DOWN

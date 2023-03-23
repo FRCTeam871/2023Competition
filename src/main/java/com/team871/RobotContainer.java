@@ -350,7 +350,17 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return foldInCommand;
+    return foldInCommand.asProxy()
+            .until(()->shoulder.isAtSetpoint())
+            .andThen(Commands.parallel(
+                    Commands.run(()-> claw.setPinch(.2)),
+                    middleCommand.asProxy()
+            ).until(()->shoulder.isAtSetpoint()).andThen(Commands.race(
+                    Commands.waitSeconds(1),
+                    Commands.run(()-> claw.setPinch(-.2))
+                            )
+                    )
+            );
   }
 
   // We should always home our extension first.

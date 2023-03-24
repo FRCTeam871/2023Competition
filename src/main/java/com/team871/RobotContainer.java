@@ -335,12 +335,6 @@ public class RobotContainer {
   }
 
   private void configureDrivetrainBindings() {
-    drivetrain.setDefaultCommand(
-        drivetrain.driveMechanumCommand(
-            shoulder::getPosition,
-            controlConfig::getDriveXAxisValue,
-            controlConfig::getDriveYAxisValue,
-            controlConfig::getDriveRotationAxisValue));
     controlConfig.getBalanceTrigger().whileTrue(drivetrain.balanceCommand());
     controlConfig.getResetGyroTrigger().whileTrue(gyro.resetGyroCommand());
   }
@@ -370,8 +364,8 @@ public class RobotContainer {
                     armExtension,
                     shoulder)
                 .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()))
-        .andThen(Commands.waitSeconds(3))
-                                // Commands.run(()->drivetrain.autonMecanum(0, .5, 0)))
+        .andThen(Commands.race(Commands.waitSeconds(3)),
+                                Commands.run(()->drivetrain.autonMecanum(0, .5, 0)))
       
         .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2)))
 
@@ -399,6 +393,12 @@ public class RobotContainer {
   // We should always home our extension first.
   public Command getTeleopInitCommand() {
     claw.setDefaultCommand(controlConfig::getClawAxisValue);
+    drivetrain.setDefaultCommand(
+      drivetrain.driveMechanumCommand(
+          shoulder::getPosition,
+          controlConfig::getDriveXAxisValue,
+          controlConfig::getDriveYAxisValue,
+          controlConfig::getDriveRotationAxisValue));
     return foldInCommand;
   }
 }

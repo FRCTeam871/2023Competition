@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
-import javax.naming.ldap.Control;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -141,9 +140,9 @@ public class RobotContainer {
     bindCommands();
   }
 
-//  private void configureClawBindings() {
-//    claw.setDefaultCommand(controlConfig::getClawAxisValue);
-//  }
+  //  private void configureClawBindings() {
+  //    claw.setDefaultCommand(controlConfig::getClawAxisValue);
+  //  }
 
   /**
    * Define the commands as instances so that we can refer to them when we need to. Commands in the
@@ -165,7 +164,7 @@ public class RobotContainer {
                     System.out.println("armAtSetpoint");
                   } else {
                     shoulder.setSetpoint(config.getBottomShoulderSetpoint());
-                      System.out.println("armNotAtSetpoint");
+                    System.out.println("armNotAtSetpoint");
                   }
                 },
                 armExtension,
@@ -352,52 +351,51 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Commands.race(Commands.waitSeconds(2),
-                         Commands.run(()->claw.setPinch(.4)))
-            .andThen(Commands.runOnce(() ->System.out.println("wheeeeeeeeeee")))
-            .andThen( Commands.run(
-                            () -> {
-                                shoulder.setSetpoint(config.getMiddleShoulderSetpoint());
-                                claw.setPinch(.4);
-                                // If the shoulder is poked out, it's safe to extend out
-                                // Otherwise pull the extension all the way in because that's safe
-                                if (shoulder.getPosition() < config.getBottomExtensionSetpoint()) {
-                                    armExtension.setSetpoint(config.getMiddleExtensionSetpoint());
-                                } else {
-                                    armExtension.setSetpoint(1);
-                                }
-                                System.out.println(armExtension.isAtSetpoint()+" "+shoulder.isAtSetpoint());
-                            },
-                            armExtension,
-                            shoulder)
-                    .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()))
-            .andThen(Commands.waitSeconds(2))
-            .andThen(Commands.runOnce(() ->System.out.println("wheeeeeeeeeee")))
-            .andThen(Commands.race(
-                    Commands.run(()->claw.setPinch(-.4)),
-                    Commands.waitSeconds(2)
-                    ))
-            .andThen(() -> {
-                        armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
-
-                        // If the extension is safe, we can move the shoulder all the way in
-                        // otherwise, go as low as we can until we get there
-                        if (armExtension.isAtSetpoint()) {
-                            shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
-                            System.out.println("armAtSetpoint");
-                        } else {
-                            shoulder.setSetpoint(config.getBottomShoulderSetpoint());
-                            System.out.println("armNotAtSetpoint");
-                        }
+    return Commands.race(Commands.waitSeconds(2), Commands.run(() -> claw.setPinch(.4)))
+        .andThen(
+            Commands.run(
+                    () -> {
+                      shoulder.setSetpoint(config.getMiddleShoulderSetpoint());
+                      claw.setPinch(.4);
+                      // If the shoulder is poked out, it's safe to extend out
+                      // Otherwise pull the extension all the way in because that's safe
+                      if (shoulder.getPosition() < config.getBottomExtensionSetpoint()) {
+                        armExtension.setSetpoint(config.getMiddleExtensionSetpoint());
+                      } else {
+                        armExtension.setSetpoint(1);
+                      }
+                      System.out.println(
+                          armExtension.isAtSetpoint() + " " + shoulder.isAtSetpoint());
                     },
                     armExtension,
                     shoulder)
-            .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint());
+                .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()))
+        .andThen(Commands.waitSeconds(2))
+        .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(10)))
+
+    .andThen(Commands.race(Commands.run(
+      () -> {
+        armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
+
+        // If the extension is safe, we can move the shoulder all the way in
+        // otherwise, go as low as we can until we get there
+        if (armExtension.isAtSetpoint()) {
+          shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
+          System.out.println("armAtSetpoint");
+        } else {
+          shoulder.setSetpoint(config.getBottomShoulderSetpoint());
+          System.out.println("armNotAtSetpoint");
+        }
+      },
+      armExtension,
+      shoulder)
+  .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())),
+  Commands.run(() -> claw.setPinch(.4)));
   }
 
   // We should always home our extension first.
   public Command getTeleopInitCommand() {
-      claw.setDefaultCommand(controlConfig::getClawAxisValue);
+    claw.setDefaultCommand(controlConfig::getClawAxisValue);
     return foldInCommand;
   }
 }

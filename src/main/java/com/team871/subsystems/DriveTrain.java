@@ -174,7 +174,11 @@ public class DriveTrain extends SubsystemBase {
       return false;
     }
   }
-  public void autonMecanum (double xValue, double yValue, double zValue){
-      mecanum.driveCartesian(xValue, yValue, zValue);
+
+  public void autonMecanum(double xValue, double yValue, double zValue) {
+    mecanum.driveCartesian(xValue, yValue, zValue);
+    SmartDashboard.putNumber(getName() + "autonX", xValue);
+    SmartDashboard.putNumber(getName() + "autonY", yValue);
+    SmartDashboard.putNumber(getName() + "autonZ", zValue);
   }
 }

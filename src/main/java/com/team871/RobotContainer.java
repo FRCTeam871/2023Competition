@@ -371,7 +371,7 @@ public class RobotContainer {
                     shoulder)
                 .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()))
         .andThen(Commands.waitSeconds(2))
-        .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(10)))
+        .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2)))
 
     .andThen(Commands.race(Commands.run(
       () -> {

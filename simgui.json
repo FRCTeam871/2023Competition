@@ -66,6 +66,9 @@
         "ArmExtension": {
           "open": true
         },
+        "DriveTrain": {
+          "open": true
+        },
         "Shoulder": {
           "open": true
         },

@@ -370,10 +370,13 @@ public class RobotContainer {
                     armExtension,
                     shoulder)
                 .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()))
-        .andThen(Commands.waitSeconds(2))
+        .andThen(Commands.waitSeconds(3))
+                                // Commands.run(()->drivetrain.autonMecanum(0, .5, 0)))
+      
         .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2)))
 
-    .andThen(Commands.race(Commands.run(
+    .andThen(Commands.race(
+      Commands.run(
       () -> {
         armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
 

@@ -62,7 +62,7 @@ public class DriveTrain extends SubsystemBase {
     return motorsEnabled;
   }
 
-  private void driveMecanum(final double xValue, final double yValue, final double zValue) {
+  public void driveMecanum(final double xValue, final double yValue, final double zValue) {
     SmartDashboard.putNumber("mecanumX", xValue);
     SmartDashboard.putNumber("mecanumY", yValue);
     SmartDashboard.putNumber("mecanumZ", zValue);
@@ -173,5 +173,8 @@ public class DriveTrain extends SubsystemBase {
     } else {
       return false;
     }
+  }
+  public void autonMecanum (double xValue, double yValue, double zValue){
+      mecanum.driveCartesian(xValue, yValue, zValue);
   }
 }

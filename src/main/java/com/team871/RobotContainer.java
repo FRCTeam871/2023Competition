@@ -345,8 +345,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Commands.race(Commands.waitSeconds(2), Commands.run(() -> claw.setPinch(.4)))
-        .andThen(
+    return Commands.race(Commands.waitSeconds(2), Commands.run(() -> claw.setPinch(.4)), Commands.run(() -> drivetrain.autonMecanum(0, 0, 0)))
+        .andThen(Commands.race(
             Commands.run(
                     () -> {
                       shoulder.setSetpoint(config.getMiddleShoulderSetpoint());
@@ -363,11 +363,12 @@ public class RobotContainer {
                     },
                     armExtension,
                     shoulder)
-                .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()))
+                .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()), 
+                Commands.run(() -> drivetrain.autonMecanum(0, 0, 0))))
         .andThen(
             Commands.race(
                 Commands.waitSeconds(3), Commands.run(() -> drivetrain.autonMecanum(0, .3, 0))))
-        .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2)))
+        .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2), Commands.run(() -> drivetrain.autonMecanum(0, 0, 0))))
         .andThen(
             Commands.race(
                 Commands.run(
@@ -387,7 +388,9 @@ public class RobotContainer {
                         armExtension,
                         shoulder)
                     .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()),
-                Commands.run(() -> claw.setPinch(.4))));
+                Commands.run(() -> claw.setPinch(.4)),
+                Commands.run(() -> drivetrain.autonMecanum(0, 0, 0)))
+                .andThen(() -> claw.setPinch(0)));
   }
 
   // We should always home our extension first.

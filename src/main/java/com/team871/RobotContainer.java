@@ -345,52 +345,83 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Commands.race(Commands.waitSeconds(2), Commands.run(() -> claw.setPinch(.4)), Commands.run(() -> drivetrain.autonMecanum(0, 0, 0)))
-        .andThen(Commands.race(
+    return Commands.race(
+               Commands.waitSeconds(1),
+                Commands.run(() -> drivetrain.autonMecanum(.2, 0, 0),drivetrain)
+    )
+    .andThen(
             Commands.run(
                     () -> {
-                      shoulder.setSetpoint(config.getMiddleShoulderSetpoint());
+                      armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
                       claw.setPinch(.4);
-                      // If the shoulder is poked out, it's safe to extend out
-                      // Otherwise pull the extension all the way in because that's safe
-                      if (shoulder.getPosition() < config.getBottomExtensionSetpoint()) {
-                        armExtension.setSetpoint(config.getMiddleExtensionSetpoint());
+                      drivetrain.autonMecanum(0, 0, 0);
+                      // If the extension is safe, we can move the shoulder all the way in
+                      // otherwise, go as low as we can until we get there
+                      if (armExtension.isAtSetpoint()) {
+                        shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
                       } else {
-                        armExtension.setSetpoint(1);
+                        shoulder.setSetpoint(config.getBottomShoulderSetpoint());
                       }
-                      System.out.println(
-                          armExtension.isAtSetpoint() + " " + shoulder.isAtSetpoint());
                     },
                     armExtension,
-                    shoulder)
-                .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()), 
-                Commands.run(() -> drivetrain.autonMecanum(0, 0, 0))))
-        .andThen(
-            Commands.race(
-                Commands.waitSeconds(3), Commands.run(() -> drivetrain.autonMecanum(0, .3, 0))))
-        .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2), Commands.run(() -> drivetrain.autonMecanum(0, 0, 0))))
-        .andThen(
-            Commands.race(
-                Commands.run(
-                        () -> {
-                          armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
+                    shoulder,
+                    drivetrain,
+                    claw)
+                .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint())
+      .andThen(
+        Commands.race(
+          Commands.waitSeconds(3),
+          Commands.run(()->drivetrain.autonMecanum(.5, 0, 0), drivetrain)
+        )
+      )
+      .andThen(
+        Commands.run(() -> drivetrain.autonMecanum(0, 0, 0), drivetrain)
+      )
+    );
+    // Commands.race(Commands.waitSeconds(2), Commands.run(() -> claw.setPinch(.4)), Commands.run(() -> drivetrain.autonMecanum(0, 0, 0)))
+    //     .andThen(Commands.race(
+    //         Commands.run(
+    //                 () -> {
+    //                   shoulder.setSetpoint(config.getMiddleShoulderSetpoint());
+    //                   claw.setPinch(.4);
+    //                   // If the shoulder is poked out, it's safe to extend out
+    //                   // Otherwise pull the extension all the way in because that's safe
+    //                   if (shoulder.getPosition() < config.getBottomExtensionSetpoint()) {
+    //                     armExtension.setSetpoint(config.getMiddleExtensionSetpoint());
+    //                   } else {
+    //                     armExtension.setSetpoint(1);
+    //                   }
+    //                   System.out.println(
+    //                       armExtension.isAtSetpoint() + " " + shoulder.isAtSetpoint());
+    //                 },
+    //                 armExtension,
+    //                 shoulder)
+    //             .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()), 
+    //             Commands.run(() -> drivetrain.autonMecanum(0, 0, 0))))
+    //     .andThen(
+    //         Commands.race(
+    //             Commands.waitSeconds(3), Commands.run(() -> drivetrain.autonMecanum(0, .3, 0))))
+    //     .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2), Commands.run(() -> drivetrain.autonMecanum(0, 0, 0))))
+    //     .andThen(
+    //         Commands.race(
+    //             Commands.run(
+    //                     () -> {
+    //                       armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
 
-                          // If the extension is safe, we can move the shoulder all the way in
-                          // otherwise, go as low as we can until we get there
-                          if (armExtension.isAtSetpoint()) {
-                            shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
-                            System.out.println("armAtSetpoint");
-                          } else {
-                            shoulder.setSetpoint(config.getBottomShoulderSetpoint());
-                            System.out.println("armNotAtSetpoint");
-                          }
-                        },
-                        armExtension,
-                        shoulder)
-                    .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()),
-                Commands.run(() -> claw.setPinch(.4)),
-                Commands.run(() -> drivetrain.autonMecanum(0, 0, 0)))
-                .andThen(() -> claw.setPinch(0)));
+    //                       // If the extension is safe, we can move the shoulder all the way in
+    //                       // otherwise, go as low as we can until we get there
+    //                       if (armExtension.isAtSetpoint()) {
+    //                         shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
+    //                       } else {
+    //                         shoulder.setSetpoint(config.getBottomShoulderSetpoint());
+    //                       }
+    //                     },
+    //                     armExtension,
+    //                     shoulder)
+    //                 .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()),
+    //             Commands.run(() -> claw.setPinch(.4)),
+    //             Commands.run(() -> drivetrain.autonMecanum(0, 0, 0)))
+    //             .andThen(() -> claw.setPinch(0)));
   }
 
   // We should always home our extension first.

@@ -6,7 +6,10 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import com.team871.simulation.SimulationDistanceEncoder;
+import com.team871.simulation.SimulationPitchEncoder;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import java.util.function.BooleanSupplier;
 
@@ -29,34 +32,35 @@ public class RobotConfig implements IRobot {
   private final PitchEncoder wristPitchEncoder;
   private final PitchEncoder shoulderPitchEncoder;
 
-  private final double maxShoulderOffsetValue = 20;
-  private static final double shoulderZero = 1.44;
-  private static final double shoulderNegative90Value = 2.2478;
+  // region Shoulder constants
+  private static final double SHOULDER_TRIM_RANGE_DEG = 20;
+  private static final double SHOULDER_ENCODER_ZERO_VALUE = 1.44;
+  private static final double SHOULDER_ENCODER_NEG_90_VALUE = 2.2478;
+  private static final double SHOULDER_TOP_SETPOINT_DEG = -12.7;
+  private static final double SHOULDER_MIDDLE_SETPOINT_DEG = 8;
+  private static final double SHOULDER_BOTTOM_SETPOINT_DEG = 58;
+  private static final double SHOULDER_FOLDED_SETPOINT_DEG = 88;
 
-  private final double maxWristOffsetValue = 45;
-  private static final double wristZeroOffset = -635;
+  // Note that negative values rotate the arm UP and positive are DOWN
+  private static final double SHOULDER_MINIMUM_OUTPUT_PERCENT = -1;
+  private static final double SHOULDER_MAXIMUM_OUTPUT_PERCENT = .1;
 
-  private static final double topShoulderSetpoint = -12.7;
-  /** formerly 16.2 */
-  private static final double middleShoulderSetpoint = 13.2;
-  /** formerly 62 */
-  private static final double bottomShoulderSetpoint = 58;
+  // endregion
 
-  private static final double topExtensionSetpoint = 18;
-  private static final double middleExtensionSetpoint = 0;
-  private static final double bottomExtensionSetpoint = 15;
-  private static final double pickupExtensionSetpoint = 15;
+  // region Wrist constants
+  private static final double WRIST_TRIM_RANGE_DEG = 45;
+  private static final double WRIST_ENCODER_ZERO_VALUE = -635;
 
-  private static final double restOnFrameSetpoint = 62;
+  // endregion
 
-  private static final double foldOutShoulderSetpoint = 55;
-  private static final double foldOutExtensionSetpoint = 14;
+  // region Extension constants
+  private static final double EXTENSION_TOP_SETPOINT_INCHES = 18.5;
+  private static final double EXTENSION_MIDDLE_SETPOINT_INCHES = 0;
+  private static final double EXTENSION_BOTTOM_SETPOINT_INCHES = 15;
+  private static final double EXTENSION_FOLDED_SETPOINT_INCHES = 0;
 
-  private static final double foldInShoulderSetpoint = 90;
-  private static final double foldInExtensionSetpoint = 0;
-
-  private static final double lowClamp = -1;
-  private static final double highClamp = .1;
+  private static final double EXTENSION_MAXIMUM_TRIM_OFFSET_INCHES = 6;
+  // endregion Extension Constants
 
   public RobotConfig() {
     /* sets front left motor to CanSparkMax motor controller with device id 1 */
@@ -97,9 +101,14 @@ public class RobotConfig implements IRobot {
     wristMotor.setInverted(true);
     wristMotor.configPeakCurrentLimit(15);
     wristMotor.configPeakCurrentDuration(250);
+    wristMotor.configContinuousCurrentLimit(5);
+    wristMotor.enableCurrentLimit(true);
 
     clawMotor = new WPI_TalonSRX(9);
     clawMotor.setNeutralMode(NeutralMode.Brake);
+    clawMotor.configContinuousCurrentLimit(8);
+    clawMotor.configPeakCurrentLimit(0);
+    clawMotor.enableCurrentLimit(true);
 
     armExtensionMotor = new WPI_TalonSRX(8);
     armExtensionMotor.setNeutralMode(NeutralMode.Brake);
@@ -108,23 +117,36 @@ public class RobotConfig implements IRobot {
         LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
     armExtensionMotor.configReverseLimitSwitchSource(
         LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
+
     armExtensionMotor.configClearPositionOnLimitR(true, 0);
-    armExtensionMotor.configPeakCurrentLimit(20);
-    armExtensionMotor.configPeakCurrentDuration(250);
+    armExtensionMotor.configPeakCurrentLimit(0);
+    armExtensionMotor.configContinuousCurrentLimit(20);
+    armExtensionMotor.enableCurrentLimit(true);
 
     balancePID = new PIDController(0.03, 0.0, 0.0001);
 
     gyro = new Gyro();
 
-    extensionEncoder = new SRXDistanceEncoder(armExtensionMotor, 0.00007005);
+    extensionEncoder =
+        RobotBase.isSimulation()
+            ? new SimulationDistanceEncoder()
+            : new SRXDistanceEncoder(armExtensionMotor, 0.00007005);
+
     // up 90 degrees is 380 down 90 degrees is 900, original value for degrees per tick was -.3529
     final double wristDegreesPerTick = 180.0d / (380.0d - 900.0d);
     wristPitchEncoder =
-        new SRXAnalogEncoderTalonSRX(wristMotor, wristZeroOffset, wristDegreesPerTick);
+        RobotBase.isSimulation()
+            ? new SimulationPitchEncoder()
+            : new SRXAnalogEncoderTalonSRX(
+                wristMotor, WRIST_ENCODER_ZERO_VALUE, wristDegreesPerTick);
     // down 90 is 1.5 and striaght out (0 degrees) is .68
-    final double shoulderDegreesPerVolt = 90 / (shoulderNegative90Value - shoulderZero);
+    final double shoulderDegreesPerVolt =
+        90 / (SHOULDER_ENCODER_NEG_90_VALUE - SHOULDER_ENCODER_ZERO_VALUE);
     shoulderPitchEncoder =
-        new SparkMaxAnalogEncoder(shoulderMotor, shoulderZero, shoulderDegreesPerVolt);
+        RobotBase.isSimulation()
+            ? new SimulationPitchEncoder()
+            : new SparkMaxAnalogEncoder(
+                shoulderMotor, SHOULDER_ENCODER_ZERO_VALUE, shoulderDegreesPerVolt);
   }
 
   @Override
@@ -203,86 +225,71 @@ public class RobotConfig implements IRobot {
   }
 
   @Override
-  public double getMaxOffsetWristValue() {
-    return maxWristOffsetValue;
+  public double getMaxWristTrimOffset() {
+    return WRIST_TRIM_RANGE_DEG;
   }
 
   @Override
-  public double getMaxOffsetShoulderValue() {
-    return maxShoulderOffsetValue;
+  public double getMaxShoulderTrimOffset() {
+    return SHOULDER_TRIM_RANGE_DEG;
+  }
+
+  @Override
+  public double getMaxExtensionTrimOffset() {
+    return EXTENSION_MAXIMUM_TRIM_OFFSET_INCHES;
   }
 
   @Override
   public double getTopShoulderSetpoint() {
-    return topShoulderSetpoint;
+    return SHOULDER_TOP_SETPOINT_DEG;
   }
 
   @Override
   public double getMiddleShoulderSetpoint() {
-    return middleShoulderSetpoint;
+    return SHOULDER_MIDDLE_SETPOINT_DEG;
   }
 
   @Override
   public double getBottomShoulderSetpoint() {
-    return bottomShoulderSetpoint;
+    return SHOULDER_BOTTOM_SETPOINT_DEG;
   }
 
   @Override
   public double getTopExtensionSetpoint() {
-    return topExtensionSetpoint;
+    return EXTENSION_TOP_SETPOINT_INCHES;
   }
 
   @Override
   public double getMiddleExtensionSetpoint() {
-    return middleExtensionSetpoint;
+    return EXTENSION_MIDDLE_SETPOINT_INCHES;
   }
 
   @Override
   public double getBottomExtensionSetpoint() {
-    return bottomExtensionSetpoint;
+    return EXTENSION_BOTTOM_SETPOINT_INCHES;
   }
 
   @Override
   public double getShoulderLowClampValue() {
-    return lowClamp;
+    return SHOULDER_MINIMUM_OUTPUT_PERCENT;
   }
 
   @Override
   public double getShoulderHighClampValue() {
-    return highClamp;
-  }
-
-  @Override
-  public double getRestOnFrameSetpoint() {
-    return restOnFrameSetpoint;
+    return SHOULDER_MAXIMUM_OUTPUT_PERCENT;
   }
 
   @Override
   public double getFoldInShoulderSetpoint() {
-    return foldInShoulderSetpoint;
+    return SHOULDER_FOLDED_SETPOINT_DEG;
   }
 
   @Override
   public double getFoldInExtensionSetpoint() {
-    return foldInExtensionSetpoint;
-  }
-
-  @Override
-  public double getFoldOutShoulderSetpoint() {
-    return foldOutShoulderSetpoint;
-  }
-
-  @Override
-  public double getFoldOutExtensionSetpoint() {
-    return foldOutExtensionSetpoint;
+    return EXTENSION_FOLDED_SETPOINT_INCHES;
   }
 
   public BooleanSupplier getIsExtensionRetracted() {
     return () -> armExtensionMotor.isRevLimitSwitchClosed() == 1;
-  }
-
-  @Override
-  public double getPickupExtensionSetpoint() {
-    return pickupExtensionSetpoint;
   }
 }

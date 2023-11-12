@@ -11,7 +11,7 @@ import java.util.function.DoubleSupplier;
 
 public class ArmExtension extends PIDSubsystem {
 
-  private static final double EXTENSION_PID_KP = 1;
+  private static final double EXTENSION_PID_KP = 1.2;
   private static final double EXTENSION_PID_KI = 0;
   private static final double EXTENSION_PID_KD = 0;
 
@@ -33,10 +33,10 @@ public class ArmExtension extends PIDSubsystem {
 
   static double limitOutput(double rawInput, double currentDistance) {
     if (rawInput < 0) {
-      double maxoutput = Math.max(currentDistance / 3, .3);
+      double maxoutput = Math.max(currentDistance / 3, .4);
       return Math.max(-maxoutput, rawInput);
     } else {
-      double maxoutput = Math.max((19 - currentDistance) / 3, .3);
+      double maxoutput = Math.max((19 - currentDistance) / 3, .4);
       return Math.min(maxoutput, rawInput);
     }
   }

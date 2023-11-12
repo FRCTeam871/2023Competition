@@ -46,9 +46,9 @@ public class RobotContainer {
   private Command bottomCommand;
   private Command middleCommand;
   private Command topCommand;
-    private SequentialCommandGroup teleopinit;
+  private SequentialCommandGroup teleopinit;
 
-    /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     config = new RobotConfig();
     //    controlConfig = new SimulationDualKeyboardControl();
@@ -131,7 +131,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    configureClawBindings();
     configureWristBindings();
     configureIntakeBindings();
     configureDrivetrainBindings();
@@ -141,9 +140,9 @@ public class RobotContainer {
     bindCommands();
   }
 
-  private void configureClawBindings() {
-    claw.setDefaultCommand(controlConfig::getClawAxisValue);
-  }
+  //  private void configureClawBindings() {
+  //    claw.setDefaultCommand(controlConfig::getClawAxisValue);
+  //  }
 
   /**
    * Define the commands as instances so that we can refer to them when we need to. Commands in the
@@ -162,8 +161,10 @@ public class RobotContainer {
                   // otherwise, go as low as we can until we get there
                   if (armExtension.isAtSetpoint()) {
                     shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
+                    System.out.println("armAtSetpoint");
                   } else {
                     shoulder.setSetpoint(config.getBottomShoulderSetpoint());
+                    System.out.println("armNotAtSetpoint");
                   }
                 },
                 armExtension,
@@ -268,11 +269,6 @@ public class RobotContainer {
             .homeExtensionCommand(config.getIsExtensionRetracted())
             .andThen(() -> armExtension.setSetpoint(1));
     homeExtensionCommand.setName("Home");
-
-      teleopinit = Commands.parallel(
-                      Commands.runOnce(() -> shoulder.setSetpoint(config.getBottomShoulderSetpoint())),
-                      Commands.runOnce(() -> wrist.setSetpoint(-90)))
-              .andThen(homeExtensionCommand);
   }
 
   /** Bind all the commands configured above to triggers. */
@@ -339,12 +335,6 @@ public class RobotContainer {
   }
 
   private void configureDrivetrainBindings() {
-    drivetrain.setDefaultCommand(
-        drivetrain.driveMechanumCommand(
-            shoulder::getPosition,
-            controlConfig::getDriveXAxisValue,
-            controlConfig::getDriveYAxisValue,
-            controlConfig::getDriveRotationAxisValue));
     controlConfig.getBalanceTrigger().whileTrue(drivetrain.balanceCommand());
     controlConfig.getResetGyroTrigger().whileTrue(gyro.resetGyroCommand());
   }
@@ -355,11 +345,60 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return armExtension.homeExtensionCommand(config.getIsExtensionRetracted());
+    return Commands.race(Commands.waitSeconds(2), Commands.run(() -> claw.setPinch(.4)))
+        .andThen(
+            Commands.run(
+                    () -> {
+                      shoulder.setSetpoint(config.getMiddleShoulderSetpoint());
+                      claw.setPinch(.4);
+                      // If the shoulder is poked out, it's safe to extend out
+                      // Otherwise pull the extension all the way in because that's safe
+                      if (shoulder.getPosition() < config.getBottomExtensionSetpoint()) {
+                        armExtension.setSetpoint(config.getMiddleExtensionSetpoint());
+                      } else {
+                        armExtension.setSetpoint(1);
+                      }
+                      System.out.println(
+                          armExtension.isAtSetpoint() + " " + shoulder.isAtSetpoint());
+                    },
+                    armExtension,
+                    shoulder)
+                .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()))
+        .andThen(
+            Commands.race(
+                Commands.waitSeconds(3), Commands.run(() -> drivetrain.autonMecanum(0, .3, 0))))
+        .andThen(Commands.race(Commands.run(() -> claw.setPinch(-.4)), Commands.waitSeconds(2)))
+        .andThen(
+            Commands.race(
+                Commands.run(
+                        () -> {
+                          armExtension.setSetpoint(config.getFoldInExtensionSetpoint());
+
+                          // If the extension is safe, we can move the shoulder all the way in
+                          // otherwise, go as low as we can until we get there
+                          if (armExtension.isAtSetpoint()) {
+                            shoulder.setSetpoint(config.getFoldInShoulderSetpoint());
+                            System.out.println("armAtSetpoint");
+                          } else {
+                            shoulder.setSetpoint(config.getBottomShoulderSetpoint());
+                            System.out.println("armNotAtSetpoint");
+                          }
+                        },
+                        armExtension,
+                        shoulder)
+                    .until(() -> armExtension.isAtSetpoint() && shoulder.isAtSetpoint()),
+                Commands.run(() -> claw.setPinch(.4))));
   }
 
   // We should always home our extension first.
   public Command getTeleopInitCommand() {
-      return teleopinit;
+    claw.setDefaultCommand(controlConfig::getClawAxisValue);
+    drivetrain.setDefaultCommand(
+        drivetrain.driveMechanumCommand(
+            shoulder::getPosition,
+            controlConfig::getDriveXAxisValue,
+            controlConfig::getDriveYAxisValue,
+            controlConfig::getDriveRotationAxisValue));
+    return foldInCommand;
   }
 }

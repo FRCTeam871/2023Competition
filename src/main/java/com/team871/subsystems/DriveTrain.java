@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class DriveTrain extends SubsystemBase {
@@ -61,7 +62,7 @@ public class DriveTrain extends SubsystemBase {
     return motorsEnabled;
   }
 
-  private void driveMecanum(final double xValue, final double yValue, final double zValue) {
+  public void driveMecanum(final double xValue, final double yValue, final double zValue) {
     SmartDashboard.putNumber("mecanumX", xValue);
     SmartDashboard.putNumber("mecanumY", yValue);
     SmartDashboard.putNumber("mecanumZ", zValue);
@@ -160,5 +161,24 @@ public class DriveTrain extends SubsystemBase {
   public CommandBase rotateCommand(final double degrees) {
     return new PIDCommand(
         rotationPID, gyro::getYaw, degrees, output -> driveMecanum(0, 0, output), this);
+  }
+
+  public CommandBase leaveZone(final BooleanSupplier isAt45Degrees) {
+    return run(() -> driveMecanum(0, .2, 0)).until(isAt45Degrees);
+  }
+
+  public Boolean isRobotAtBalanceSetpoint(DoubleSupplier gyroPitch) {
+    if (gyroPitch.getAsDouble() >= 15.0d) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public void autonMecanum(double xValue, double yValue, double zValue) {
+    mecanum.driveCartesian(xValue, yValue, zValue);
+    SmartDashboard.putNumber(getName() + "autonX", xValue);
+    SmartDashboard.putNumber(getName() + "autonY", yValue);
+    SmartDashboard.putNumber(getName() + "autonZ", zValue);
   }
 }

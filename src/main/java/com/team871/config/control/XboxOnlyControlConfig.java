@@ -1,11 +1,10 @@
-package com.team871.config;
+package com.team871.config.control;
 
-import com.team871.controller.CommandX56HotasThrottle;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class XboxHotasControlConfig implements IControlConfig {
+public class XboxOnlyControlConfig implements IControlConfig {
 
   private static final double LEFT_X_DEADBAND = .09;
   private static final double LEFT_Y_DEADBAND = .09;
@@ -15,11 +14,11 @@ public class XboxHotasControlConfig implements IControlConfig {
   private static final double TRIGGER_DEADBAND = 0.01;
 
   private final CommandXboxController driveController;
-  private final CommandX56HotasThrottle systemController;
+  private final CommandXboxController systemController;
 
-  public XboxHotasControlConfig() {
+  public XboxOnlyControlConfig() {
     driveController = new CommandXboxController(0);
-    systemController = new CommandX56HotasThrottle(1);
+    systemController = new CommandXboxController(1);
   }
 
   @Override
@@ -29,25 +28,22 @@ public class XboxHotasControlConfig implements IControlConfig {
 
   @Override
   public double getWristAxisValue() {
-    return -systemController.getRightThrottle();
+    return 0;
   }
 
   @Override
   public double getShoulderAxisValue() {
-    return systemController.getRotary3();
+    return MathUtil.applyDeadband(systemController.getLeftY(), LEFT_Y_DEADBAND);
   }
 
   @Override
   public double getExtensionAxisValue() {
-    // The throttle is negative when fully forward and positive when fully back.
-    // This normalizes the throttle so that we get a 0 - 1 value where
-    // 0 is fully back, and 1 is fully forward
-    return (-systemController.getLeftThrottle() + 1.0d) / 2.0d;
+    return getCompoundTriggerAxis(systemController);
   }
 
   @Override
   public double getExtensionAxisTrimValue() {
-    return -systemController.getLeftThrottle();
+    return MathUtil.applyDeadband(systemController.getRightY(), RIGHT_Y_DEADBAND);
   }
 
   @Override
@@ -67,17 +63,17 @@ public class XboxHotasControlConfig implements IControlConfig {
 
   @Override
   public Trigger getHighNodeTrigger() {
-    return driveController.y();
+    return systemController.y();
   }
 
   @Override
   public Trigger getMiddleNodeTrigger() {
-    return driveController.b();
+    return systemController.b();
   }
 
   @Override
   public Trigger getBottomNodeTrigger() {
-    return driveController.a();
+    return systemController.a();
   }
 
   @Override
@@ -112,28 +108,28 @@ public class XboxHotasControlConfig implements IControlConfig {
 
   @Override
   public Trigger getFoldOutTrigger() {
-    return driveController.a();
+    return systemController.start();
   }
 
   @Override
   public Trigger getFoldInTrigger() {
-    return driveController.x();
+    return systemController.back();
   }
 
   @Override
   public Trigger getHomeExtensionTrigger() {
-    // TODO Auto-generated method stub
-    return systemController.getToggleUp(1);
+    return driveController.x();
   }
 
   @Override
   public Trigger getPickupTrigger() {
-    return systemController.getSw(6);
+    // TODO Auto-generated method stub
+    return systemController.x();
   }
 
   @Override
   public Trigger getManualControl() {
     // TODO Auto-generated method stub
-    return systemController.getToggleDown(2);
+    return new Trigger();
   }
 }

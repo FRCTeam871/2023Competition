@@ -1,18 +1,18 @@
-package com.team871.simulation;
+package com.team871.sensor.simulation;
 
-import com.team871.config.DistanceEncoder;
+import com.team871.sensor.SendableEncoder;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
-public class SimulationDistanceEncoder implements DistanceEncoder {
+public class SimulationDistanceEncoder implements SendableEncoder {
   private double distance;
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    builder.addDoubleProperty("distance", this::getDistance, this::setDistance);
+    builder.addDoubleProperty("distance", this::getPosition, this::setDistance);
   }
 
   @Override
-  public double getDistance() {
+  public double getPosition() {
     return distance;
   }
 
@@ -21,7 +21,7 @@ public class SimulationDistanceEncoder implements DistanceEncoder {
   }
 
   @Override
-  public void reset() {
+  public void setPosition() {
     this.distance = 0;
   }
 

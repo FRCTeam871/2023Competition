@@ -1,35 +1,28 @@
-package com.team871.config;
+package com.team871.config.control;
 
+import com.team871.controller.CommandX56HotasStick;
 import com.team871.controller.CommandX56HotasThrottle;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class XboxHotasSystemsController implements IControlConfig {
-
-  private static final double LEFT_X_DEADBAND = .09;
-  private static final double LEFT_Y_DEADBAND = .09;
-  private static final double RIGHT_X_DEADBAND = .09;
-  private static final double RIGHT_Y_DEADBAND = .09;
-
+public class HotasOnlyControlConfig implements IControlConfig {
   private static final double TRIGGER_DEADBAND = 0.01;
 
-  private final CommandXboxController driveController;
+  private final CommandX56HotasStick driveController;
   private final CommandX56HotasThrottle systemController;
 
-  public XboxHotasSystemsController() {
-    driveController = new CommandXboxController(0);
+  public HotasOnlyControlConfig() {
+    driveController = new CommandX56HotasStick(0);
     systemController = new CommandX56HotasThrottle(1);
   }
 
   @Override
   public double getClawAxisValue() {
-    return getCompoundTriggerAxis(driveController);
+    return driveController.getThumbStickY();
   }
 
   @Override
   public double getWristAxisValue() {
-    return systemController.getRightThrottle();
+    return systemController.getFAxis();
   }
 
   @Override
@@ -47,22 +40,22 @@ public class XboxHotasSystemsController implements IControlConfig {
 
   @Override
   public double getExtensionAxisTrimValue() {
-    return -systemController.getLeftThrottle();
+    return 0;
   }
 
   @Override
   public double getDriveXAxisValue() {
-    return -driveController.getLeftY();
+    return driveController.getStickY();
   }
 
   @Override
   public double getDriveYAxisValue() {
-    return driveController.getLeftX();
+    return driveController.getStickX();
   }
 
   @Override
   public double getDriveRotationAxisValue() {
-    return driveController.getRightX();
+    return driveController.getRotation();
   }
 
   @Override
@@ -81,13 +74,18 @@ public class XboxHotasSystemsController implements IControlConfig {
   }
 
   @Override
+  public Trigger getPickupTrigger() {
+    return systemController.getSw(6);
+  }
+
+  @Override
   public Trigger getIntakeTrigger() {
-    return driveController.y();
+    return driveController.trigger();
   }
 
   @Override
   public Trigger getExhaustTrigger() {
-    return driveController.a();
+    return driveController.d();
   }
 
   @Override
@@ -97,17 +95,7 @@ public class XboxHotasSystemsController implements IControlConfig {
 
   @Override
   public Trigger getResetGyroTrigger() {
-    return driveController.start();
-  }
-
-  private double getCompoundTriggerAxis(final CommandXboxController controller) {
-    // The left and right trigger axes are actually the same axes.  The left trigger will make the
-    // axes go from 0
-    // to -1,  while the right will go from 0 to + 1.  We can simply add the two together to get a
-    // single compound
-    // axis that looks like one. Notably, if the driver pulls them both, they cancel out to 0.
-    final double compoundAxis = -controller.getLeftTriggerAxis() + controller.getRightTriggerAxis();
-    return MathUtil.applyDeadband(compoundAxis, TRIGGER_DEADBAND);
+    return driveController.a();
   }
 
   @Override
@@ -122,18 +110,11 @@ public class XboxHotasSystemsController implements IControlConfig {
 
   @Override
   public Trigger getHomeExtensionTrigger() {
-    // TODO Auto-generated method stub
     return systemController.getToggleUp(1);
   }
 
   @Override
-  public Trigger getPickupTrigger() {
-    return systemController.getSw(6);
-  }
-
-  @Override
   public Trigger getManualControl() {
-    // TODO Auto-generated method stub
-    return systemController.getToggleDown(2);
+    return systemController.getToggleDown(1);
   }
 }

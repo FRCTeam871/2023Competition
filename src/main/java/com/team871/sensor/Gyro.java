@@ -1,4 +1,4 @@
-package com.team871.config;
+package com.team871.sensor;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.util.sendable.SendableBuilder;

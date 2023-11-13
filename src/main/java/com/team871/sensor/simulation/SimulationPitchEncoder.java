@@ -1,12 +1,12 @@
-package com.team871.simulation;
+package com.team871.sensor.simulation;
 
-import com.team871.config.PitchEncoder;
+import com.team871.sensor.AbsoluteEncoder;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
-public class SimulationPitchEncoder implements PitchEncoder {
+public class SimulationPitchEncoder implements AbsoluteEncoder {
   private double pitch;
 
-  public double getPitch() {
+  public double getPosition() {
     return pitch;
   }
 
@@ -16,7 +16,7 @@ public class SimulationPitchEncoder implements PitchEncoder {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    builder.addDoubleProperty("pitch", this::getPitch, this::setPitch);
+    builder.addDoubleProperty("pitch", this::getPosition, this::setPitch);
   }
 
   @Override

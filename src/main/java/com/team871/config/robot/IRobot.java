@@ -1,8 +1,11 @@
-package com.team871.config;
+package com.team871.config.robot;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import java.util.function.BooleanSupplier;
+import com.team871.sensor.SendableEncoder;
+import com.team871.sensor.IGyro;
+import com.team871.sensor.AbsoluteEncoder;
 
 public interface IRobot {
   /**
@@ -44,11 +47,11 @@ public interface IRobot {
 
   PIDController getBalancePID();
 
-  DistanceEncoder getExtensionEncoder();
+  SendableEncoder getExtensionEncoder();
 
-  PitchEncoder getWristPitchEncoder();
+  AbsoluteEncoder getWristPitchEncoder();
 
-  PitchEncoder getShoulderPitchEncoder();
+  AbsoluteEncoder getShoulderPitchEncoder();
 
   double getMaxWristTrimOffset();
 

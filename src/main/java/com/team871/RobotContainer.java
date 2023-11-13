@@ -6,8 +6,16 @@
 package com.team871;
 
 import com.team871.config.*;
+import com.team871.config.control.IControlConfig;
+import com.team871.config.control.XboxHotasSystemsController;
+import com.team871.config.robot.IRobot;
+import com.team871.config.robot.RobotConfig;
 import com.team871.dashboard.DriveTrainExtensions;
-import com.team871.simulation.SimulationGyro;
+import com.team871.sensor.SendableEncoder;
+import com.team871.sensor.Gyro;
+import com.team871.sensor.IGyro;
+import com.team871.sensor.AbsoluteEncoder;
+import com.team871.sensor.simulation.SimulationGyro;
 import com.team871.subsystems.ArmExtension;
 import com.team871.subsystems.Claw;
 import com.team871.subsystems.DriveTrain;
@@ -65,7 +73,7 @@ public class RobotContainer {
             config.getRearRightMotor(),
             gyro);
 
-    final PitchEncoder shoulderPitchEncoder = config.getShoulderPitchEncoder();
+    final AbsoluteEncoder shoulderPitchEncoder = config.getShoulderPitchEncoder();
 
     // -90 is fully up, 0 is parallel to the ground, 90 is fully down. Down is
     // negative motor output
@@ -85,7 +93,7 @@ public class RobotContainer {
             90,
             15);
 
-    final PitchEncoder wristPitchEncoder = config.getWristPitchEncoder();
+    final AbsoluteEncoder wristPitchEncoder = config.getWristPitchEncoder();
 
     /*
      * 90 is fully up, 0 is parallel to the ground, -90 is fully down. Down is
@@ -97,7 +105,7 @@ public class RobotContainer {
     claw = new Claw(config.getClawMotor());
     intake = new Intake(config.getLeftIntakeMotor(), config.getRightIntakeMotor());
 
-    final DistanceEncoder extensionEncoder = config.getExtensionEncoder();
+    final SendableEncoder extensionEncoder = config.getExtensionEncoder();
     armExtension = new ArmExtension(config.getArmExtensionMotor(), extensionEncoder);
 
     SmartDashboard.putData("DriveTrain", drivetrain);
@@ -106,7 +114,6 @@ public class RobotContainer {
     SmartDashboard.putData("Claw", claw);
     SmartDashboard.putData("ArmExtension", armExtension);
     SmartDashboard.putData("Gyro", gyro);
-    SmartDashboard.putData("DriveTrainTest", new DriveTrainExtensions(drivetrain));
 
     // Configure the trigger bindings
     configureBindings();
@@ -316,7 +323,7 @@ public class RobotContainer {
         wrist.run(
             "FollowShoulder",
             () -> {
-              final double targetPosition = config.getShoulderPitchEncoder().getPitch();
+              final double targetPosition = config.getShoulderPitchEncoder().getPosition();
               final double offsetValue =
                   controlConfig.getWristAxisValue() * config.getMaxWristTrimOffset();
               double setpoint = (targetPosition * -1) + offsetValue;

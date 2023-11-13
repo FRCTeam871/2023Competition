@@ -1,6 +1,6 @@
-package com.team871.simulation;
+package com.team871.sensor.simulation;
 
-import com.team871.config.IGyro;
+import com.team871.sensor.IGyro;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;

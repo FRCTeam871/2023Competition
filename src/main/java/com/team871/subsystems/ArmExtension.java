@@ -1,6 +1,5 @@
 package com.team871.subsystems;
 
-import com.team871.config.DistanceEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -8,6 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import com.team871.sensor.SendableEncoder;
 
 public class ArmExtension extends PIDSubsystem {
 
@@ -16,11 +16,11 @@ public class ArmExtension extends PIDSubsystem {
   private static final double EXTENSION_PID_KD = 0;
 
   private final MotorController extensionMotor;
-  private final DistanceEncoder distanceEncoder;
+  private final SendableEncoder distanceEncoder;
 
   private boolean isHomed = false;
 
-  public ArmExtension(final MotorController extensionMotor, final DistanceEncoder distanceEncoder) {
+  public ArmExtension(final MotorController extensionMotor, final SendableEncoder distanceEncoder) {
     super(new PIDController(EXTENSION_PID_KP, EXTENSION_PID_KI, EXTENSION_PID_KD));
     this.extensionMotor = extensionMotor;
     this.distanceEncoder = distanceEncoder;
@@ -45,7 +45,7 @@ public class ArmExtension extends PIDSubsystem {
    * @param output retract is negative, extend is positive, output between -1 and 1
    */
   public void moveExtension(final double output) {
-    final double limitedOutput = limitOutput(output, distanceEncoder.getDistance());
+    final double limitedOutput = limitOutput(output, distanceEncoder.getPosition());
     extensionMotor.set(limitedOutput);
     SmartDashboard.putNumber("extensionMotorOutput", limitedOutput);
   }
@@ -76,7 +76,7 @@ public class ArmExtension extends PIDSubsystem {
 
   @Override
   protected double getMeasurement() {
-    return distanceEncoder.getDistance();
+    return distanceEncoder.getPosition();
   }
 
   public boolean isAtSetpoint() {

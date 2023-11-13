@@ -1,15 +1,15 @@
-package com.team871.config;
+package com.team871.sensor;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
-public class SRXAnalogEncoderTalonSRX implements PitchEncoder {
+public class SRXAnalogEncoder implements AbsoluteEncoder {
 
   private final WPI_TalonSRX talon;
   private double zeroOffset;
   private double degreesPerTick;
 
-  public SRXAnalogEncoderTalonSRX(WPI_TalonSRX talonSRX, double zeroOffset, double degreesPerTick) {
+  public SRXAnalogEncoder(WPI_TalonSRX talonSRX, double zeroOffset, double degreesPerTick) {
 
     this.talon = talonSRX;
     this.zeroOffset = zeroOffset;
@@ -21,7 +21,7 @@ public class SRXAnalogEncoderTalonSRX implements PitchEncoder {
   }
 
   @Override
-  public double getPitch() {
+  public double getPosition() {
     return calculateDegrees(talon.getSelectedSensorPosition());
   }
 
@@ -31,13 +31,18 @@ public class SRXAnalogEncoderTalonSRX implements PitchEncoder {
   }
 
   @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.addDoubleProperty("pitch", this::getPitch, null);
-    builder.addDoubleProperty("rawValue", this::getRawValue, null);
+  public void setZeroOffset(final double position) {
+    talon.getSensorCollection().setAnalogPosition((int)position, 0);
   }
 
   @Override
-  public void reset() {
-    talon.getSensorCollection().setQuadraturePosition(0, 0);
+  public void setScaleFactor(double kScale) {
+      this.degreesPerTick = kScale;
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.addDoubleProperty("Position", this::getPosition, null);
+    builder.addDoubleProperty("Raw", this::getRawValue, null);
   }
 }

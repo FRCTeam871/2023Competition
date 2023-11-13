@@ -1,4 +1,4 @@
-package com.team871.config;
+package com.team871.config.control;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;

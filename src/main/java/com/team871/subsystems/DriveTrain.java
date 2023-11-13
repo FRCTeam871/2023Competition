@@ -1,6 +1,5 @@
 package com.team871.subsystems;
 
-import com.team871.config.IGyro;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -13,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import com.team871.sensor.IGyro;
 
 public class DriveTrain extends SubsystemBase {
 

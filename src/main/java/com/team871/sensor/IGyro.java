@@ -1,4 +1,4 @@
-package com.team871.config;
+package com.team871.sensor;
 
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.CommandBase;

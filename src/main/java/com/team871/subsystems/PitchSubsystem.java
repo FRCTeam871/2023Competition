@@ -1,6 +1,6 @@
 package com.team871.subsystems;
 
-import com.team871.config.PitchEncoder;
+import com.team871.sensor.AbsoluteEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 
 public class PitchSubsystem extends PIDSubsystem {
   private final MotorController motor;
-  private final PitchEncoder pitchEncoder;
+  private final AbsoluteEncoder pitchEncoder;
   private boolean motorsEnabled = true;
   private final double lowClamp;
   private final double highClamp;
@@ -34,7 +34,7 @@ public class PitchSubsystem extends PIDSubsystem {
 
   public PitchSubsystem(
       final MotorController motor,
-      final PitchEncoder pitchEncoder,
+      final AbsoluteEncoder pitchEncoder,
       double kp,
       double ki,
       double kd,
@@ -66,14 +66,14 @@ public class PitchSubsystem extends PIDSubsystem {
 
   public void movePitchFeedForward(final double output) {
     double currentTime = Timer.getFPGATimestamp();
-    double currentPosition = pitchEncoder.getPitch();
+    double currentPosition = pitchEncoder.getPosition();
     double velocityDegPerS = (currentPosition - lastPosition) / (currentTime - lastTime);
 
     // TODO: We are doing this completely wrong.  These parameters are the setpoints, not the
     // current state of the system
     double outputFeedForward =
         armFeedforward.calculate(
-            Math.toRadians(pitchEncoder.getPitch()), Math.toRadians(velocityDegPerS));
+            Math.toRadians(pitchEncoder.getPosition()), Math.toRadians(velocityDegPerS));
     double clampedOutput =
         MathUtil.clamp(output + outputFeedForward, lowClamp * 12, highClamp * 12);
     if (motorsEnabled) {
@@ -115,11 +115,11 @@ public class PitchSubsystem extends PIDSubsystem {
 
   @Override
   protected double getMeasurement() {
-    return pitchEncoder.getPitch();
+    return pitchEncoder.getPosition();
   }
 
   public double getPosition() {
-    return pitchEncoder.getPitch();
+    return pitchEncoder.getPosition();
   }
 
   @Override

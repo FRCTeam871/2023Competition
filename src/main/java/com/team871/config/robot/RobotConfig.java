@@ -1,4 +1,4 @@
-package com.team871.config;
+package com.team871.config.robot;
 
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
@@ -6,8 +6,15 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
-import com.team871.simulation.SimulationDistanceEncoder;
-import com.team871.simulation.SimulationPitchEncoder;
+import com.team871.sensor.SendableEncoder;
+import com.team871.sensor.Gyro;
+import com.team871.sensor.IGyro;
+import com.team871.sensor.AbsoluteEncoder;
+import com.team871.sensor.SRXAnalogEncoder;
+import com.team871.sensor.SRXIncrementalEncoder;
+import com.team871.sensor.SparkMaxAnalogEncoder;
+import com.team871.sensor.simulation.SimulationDistanceEncoder;
+import com.team871.sensor.simulation.SimulationPitchEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -28,9 +35,9 @@ public class RobotConfig implements IRobot {
   private final PIDController balancePID;
 
   private final IGyro gyro;
-  private final DistanceEncoder extensionEncoder;
-  private final PitchEncoder wristPitchEncoder;
-  private final PitchEncoder shoulderPitchEncoder;
+  private final SendableEncoder extensionEncoder;
+  private final AbsoluteEncoder wristPitchEncoder;
+  private final AbsoluteEncoder shoulderPitchEncoder;
 
   // region Shoulder constants
   private static final double SHOULDER_TRIM_RANGE_DEG = 20;
@@ -130,14 +137,14 @@ public class RobotConfig implements IRobot {
     extensionEncoder =
         RobotBase.isSimulation()
             ? new SimulationDistanceEncoder()
-            : new SRXDistanceEncoder(armExtensionMotor, 0.00007005);
+            : new SRXIncrementalEncoder(armExtensionMotor, 0.00007005);
 
     // up 90 degrees is 380 down 90 degrees is 900, original value for degrees per tick was -.3529
     final double wristDegreesPerTick = 180.0d / (380.0d - 900.0d);
     wristPitchEncoder =
         RobotBase.isSimulation()
             ? new SimulationPitchEncoder()
-            : new SRXAnalogEncoderTalonSRX(
+            : new SRXAnalogEncoder(
                 wristMotor, WRIST_ENCODER_ZERO_VALUE, wristDegreesPerTick);
     // down 90 is 1.5 and striaght out (0 degrees) is .68
     final double shoulderDegreesPerVolt =
@@ -180,17 +187,17 @@ public class RobotConfig implements IRobot {
   }
 
   @Override
-  public DistanceEncoder getExtensionEncoder() {
+  public SendableEncoder getExtensionEncoder() {
     return extensionEncoder;
   }
 
   @Override
-  public PitchEncoder getWristPitchEncoder() {
+  public AbsoluteEncoder getWristPitchEncoder() {
     return wristPitchEncoder;
   }
 
   @Override
-  public PitchEncoder getShoulderPitchEncoder() {
+  public AbsoluteEncoder getShoulderPitchEncoder() {
     return shoulderPitchEncoder;
   }
 
